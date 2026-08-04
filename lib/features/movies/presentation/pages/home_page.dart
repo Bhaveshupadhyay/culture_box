@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import '../data/mock_movies.dart';
-import '../theme/app_theme.dart';
-import '../widgets/culturebox_logo.dart';
+import '../../../../app/theme/app_theme.dart';
+import '../../../../core/widgets/culturebox_logo.dart';
+import '../../../../core/widgets/custom_drawer.dart';
+import '../../data/sources/mock_movies.dart';
 import '../widgets/hero_carousel.dart';
 import '../widgets/movie_section.dart';
-import '../widgets/custom_drawer.dart';
-import 'search_screen.dart';
+import 'search_page.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +29,7 @@ class HomeScreen extends StatelessWidget {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SearchScreen()),
+                MaterialPageRoute(builder: (context) => const SearchPage()),
               );
             },
           ),
@@ -40,9 +40,7 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top Hero Banner Carousel
             HeroCarousel(movies: heroMovies),
-            // Movie Rows
             MovieSection(
               title: 'CULTURE BOX TV NETWORK ORIGINALS',
               movies: originals,

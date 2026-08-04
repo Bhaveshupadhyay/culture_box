@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/movie.dart';
-import '../theme/app_theme.dart';
+import '../../../../app/theme/app_theme.dart';
+import '../../data/models/movie.dart';
 import 'movie_card.dart';
 
 class MovieSection extends StatelessWidget {

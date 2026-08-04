@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-import '../models/movie.dart';
-import '../data/mock_movies.dart';
-import '../theme/app_theme.dart';
+import '../../../../app/theme/app_theme.dart';
+import '../../data/models/movie.dart';
+import '../../data/sources/mock_movies.dart';
 import '../widgets/movie_card.dart';
 
-class DetailsScreen extends StatelessWidget {
+class DetailsPage extends StatelessWidget {
   final Movie movie;
 
-  const DetailsScreen({super.key, required this.movie});
+  const DetailsPage({super.key, required this.movie});
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +88,6 @@ class DetailsScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Meta Info Pills (Year, Rating, Age, Lang, Duration)
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
@@ -102,7 +101,6 @@ class DetailsScreen extends StatelessWidget {
                     ),
                   ),
                   AppSpacing.vGap16,
-                  // Action Buttons (Watch Now & Play Trailer)
                   Row(
                     children: [
                       Expanded(
@@ -168,23 +166,18 @@ class DetailsScreen extends StatelessWidget {
                     ],
                   ),
                   AppSpacing.vGap20,
-                  // Plot Summary
                   Text(
                     movie.description,
                     style: AppTextStyles.bodyText,
                   ),
                   AppSpacing.vGap16,
-                  // Genres
                   _buildDetailRow('Genres:', movie.genres.join(', ')),
                   AppSpacing.vGap8,
-                  // Cast
                   _buildDetailRow('Cast:', movie.cast.join(', '),
                       isAccent: true),
                   AppSpacing.vGap8,
-                  // Country
                   _buildDetailRow('Country:', movie.countries.join(', ')),
                   AppSpacing.vGap32,
-                  // More Like This Section
                   Text(
                     'More Like This',
                     style: AppTextStyles.sectionTitle,

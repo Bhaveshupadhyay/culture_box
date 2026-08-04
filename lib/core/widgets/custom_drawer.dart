@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import '../screens/home_screen.dart';
-import '../screens/search_screen.dart';
-import '../screens/choose_plan_screen.dart';
-import '../screens/profile_screen.dart';
-import '../screens/settings_screen.dart';
+import '../../app/theme/app_theme.dart';
+import '../../features/movies/presentation/pages/home_page.dart';
+import '../../features/movies/presentation/pages/search_page.dart';
+import '../../features/subscription/presentation/pages/choose_plan_page.dart';
+import '../../features/profile/presentation/pages/profile_page.dart';
+import '../../features/settings/presentation/pages/settings_page.dart';
 import 'culturebox_logo.dart';
 
 class CustomDrawer extends StatelessWidget {
@@ -53,7 +53,7 @@ class CustomDrawer extends StatelessWidget {
                 Navigator.pop(context);
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  MaterialPageRoute(builder: (context) => const HomePage()),
                 );
               },
             ),
@@ -67,7 +67,7 @@ class CustomDrawer extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        const SearchScreen(initialQuery: 'Trending'),
+                        const SearchPage(initialQuery: 'Trending'),
                   ),
                 );
               },
@@ -80,7 +80,7 @@ class CustomDrawer extends StatelessWidget {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const SearchScreen()),
+                  MaterialPageRoute(builder: (context) => const SearchPage()),
                 );
               },
             ),
@@ -94,7 +94,7 @@ class CustomDrawer extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const ChoosePlanScreen()),
+                      builder: (context) => const ChoosePlanPage()),
                 );
               },
             ),
@@ -106,7 +106,7 @@ class CustomDrawer extends StatelessWidget {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                  MaterialPageRoute(builder: (context) => const ProfilePage()),
                 );
               },
             ),
@@ -119,7 +119,7 @@ class CustomDrawer extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const SettingsScreen()),
+                      builder: (context) => const SettingsPage()),
                 );
               },
             ),
@@ -164,7 +164,7 @@ class CustomDrawer extends StatelessWidget {
                         context,
                         MaterialPageRoute(
                           builder: (context) =>
-                              SearchScreen(initialQuery: genre),
+                              SearchPage(initialQuery: genre),
                         ),
                       );
                     },

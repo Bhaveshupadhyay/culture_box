@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
-import '../data/mock_movies.dart';
-import '../widgets/movie_card.dart';
+import '../../../../app/theme/app_theme.dart';
+import '../../../movies/data/sources/mock_movies.dart';
+import '../../../movies/presentation/widgets/movie_card.dart';
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+class ProfilePage extends StatelessWidget {
+  const ProfilePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,6 @@ class ProfileScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // User Info Header
             Container(
               padding: AppSpacing.all16,
               decoration: BoxDecoration(
@@ -79,7 +78,6 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             AppSpacing.vGap24,
-            // My Watchlist
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -105,7 +103,6 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             AppSpacing.vGap24,
-            // Account Options
             Text(
               'ACCOUNT & SETTINGS',
               style: AppTextStyles.sectionHeaderSmall,
@@ -117,7 +114,6 @@ class ProfileScreen extends StatelessWidget {
             _buildProfileOption(Icons.lock, 'Parental Controls', () {}),
             _buildProfileOption(Icons.help_outline, 'Help & Support', () {}),
             AppSpacing.vGap20,
-            // Sign Out
             SizedBox(
               width: double.infinity,
               height: AppSpacing.px46,

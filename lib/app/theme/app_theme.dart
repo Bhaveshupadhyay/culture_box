@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 export 'app_spacing.dart';
-export 'textstyles.dart';
+export 'app_text_styles.dart';
 
 class AppColors {
   static const Color background = Color(0xFF070709);
@@ -15,7 +15,7 @@ class AppColors {
   static const Color logoGold = Color(0xFFFFB800);
   static const Color primaryOrange = Color(0xFFFF4500);
   static const Color primaryGold = Color(0xFFFFB800);
-  static const Color primaryBlue = Color(0xFFFF3B00); // Mapped to brand accent orange for compatibility
+  static const Color primaryBlue = Color(0xFFFF3B00);
   
   static const LinearGradient logoGradient = LinearGradient(
     colors: [Color(0xFFFF3B00), Color(0xFFFFB800)],
@@ -71,4 +71,3 @@ class AppTheme {
     );
   }
 }
-

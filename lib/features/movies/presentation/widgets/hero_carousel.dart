@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../models/movie.dart';
-import '../theme/app_theme.dart';
-import '../screens/details_screen.dart';
+import '../../../../app/theme/app_theme.dart';
+import '../../data/models/movie.dart';
+import '../pages/details_page.dart';
 
 class HeroCarousel extends StatefulWidget {
   final List<Movie> movies;
@@ -70,7 +70,7 @@ class _HeroCarouselState extends State<HeroCarousel> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => DetailsScreen(movie: movie),
+            builder: (context) => DetailsPage(movie: movie),
           ),
         );
       },
@@ -86,7 +86,7 @@ class _HeroCarouselState extends State<HeroCarousel> {
               child: const Icon(Icons.movie, size: 60, color: Colors.grey),
             ),
           ),
-          // Gradient overlays (top & bottom)
+          // Gradient overlays
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -111,7 +111,6 @@ class _HeroCarouselState extends State<HeroCarousel> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Tag / Badge
                 if (movie.isOriginal)
                   Container(
                     margin: const EdgeInsets.only(bottom: AppSpacing.px8),
@@ -126,13 +125,11 @@ class _HeroCarouselState extends State<HeroCarousel> {
                       style: AppTextStyles.badgeText.copyWith(color: Colors.black, fontWeight: FontWeight.w900),
                     ),
                   ),
-                // Title
                 Text(
                   movie.title,
                   style: AppTextStyles.heroTitle,
                 ),
                 AppSpacing.vGap8,
-                // Meta Info (Rating & Year)
                 Row(
                   children: [
                     Container(
@@ -172,7 +169,6 @@ class _HeroCarouselState extends State<HeroCarousel> {
                   ],
                 ),
                 AppSpacing.vGap10,
-                // Description
                 Text(
                   movie.description,
                   maxLines: 2,
@@ -180,7 +176,6 @@ class _HeroCarouselState extends State<HeroCarousel> {
                   style: AppTextStyles.bodySecondary,
                 ),
                 AppSpacing.vGap16,
-                // Watch Now Button
                 Container(
                   width: double.infinity,
                   height: AppSpacing.px46,
@@ -201,7 +196,7 @@ class _HeroCarouselState extends State<HeroCarousel> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => DetailsScreen(movie: movie),
+                          builder: (context) => DetailsPage(movie: movie),
                         ),
                       );
                     },

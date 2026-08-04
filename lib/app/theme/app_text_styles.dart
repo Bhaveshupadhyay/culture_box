@@ -259,5 +259,4 @@ class AppTextStyles {
   );
 }
 
-/// Alias for AppTextStyles to support both naming styles
 typedef TextStyles = AppTextStyles;

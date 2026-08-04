@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../../../../app/theme/app_theme.dart';
 
-class ChoosePlanScreen extends StatefulWidget {
-  const ChoosePlanScreen({super.key});
+class ChoosePlanPage extends StatefulWidget {
+  const ChoosePlanPage({super.key});
 
   @override
-  State<ChoosePlanScreen> createState() => _ChoosePlanScreenState();
+  State<ChoosePlanPage> createState() => _ChoosePlanPageState();
 }
 
-class _ChoosePlanScreenState extends State<ChoosePlanScreen> {
+class _ChoosePlanPageState extends State<ChoosePlanPage> {
   int _selectedPlanIndex = 1;
 
   final List<Map<String, dynamic>> _plans = [

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../theme/app_theme.dart';
+import '../../app/theme/app_theme.dart';
 
 class CultureBoxLogo extends StatelessWidget {
   final double fontSize;

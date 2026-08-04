@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import '../theme/app_theme.dart';
+import '../../../../app/theme/app_theme.dart';
 
-class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  State<SettingsPage> createState() => _SettingsPageState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsPageState extends State<SettingsPage> {
   bool _cellularDataSaver = false;
   bool _autoPlayNext = true;
   bool _notifications = true;

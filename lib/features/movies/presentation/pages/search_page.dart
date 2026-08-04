@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
-import '../models/movie.dart';
-import '../data/mock_movies.dart';
-import '../theme/app_theme.dart';
+import '../../../../app/theme/app_theme.dart';
+import '../../data/models/movie.dart';
+import '../../data/sources/mock_movies.dart';
 import '../widgets/movie_card.dart';
 
-class SearchScreen extends StatefulWidget {
+class SearchPage extends StatefulWidget {
   final String? initialQuery;
 
-  const SearchScreen({super.key, this.initialQuery});
+  const SearchPage({super.key, this.initialQuery});
 
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
+  State<SearchPage> createState() => _SearchPageState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class _SearchPageState extends State<SearchPage> {
   late TextEditingController _searchController;
   String _selectedGenre = 'All';
   List<Movie> _filteredMovies = [];
@@ -73,7 +73,6 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
       body: Column(
         children: [
-          // Search TextField
           Padding(
             padding: AppSpacing.all16,
             child: TextField(
@@ -103,7 +102,6 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
           ),
-          // Genre Chips
           SizedBox(
             height: AppSpacing.px40,
             child: ListView.builder(
@@ -137,7 +135,6 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
           AppSpacing.vGap16,
-          // Results Grid
           Expanded(
             child: _filteredMovies.isEmpty
                 ? Center(
