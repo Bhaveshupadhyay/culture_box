@@ -41,6 +41,7 @@ class AppSpacing {
   static const EdgeInsets all12 = EdgeInsets.all(px12);
   static const EdgeInsets all16 = EdgeInsets.all(px16);
   static const EdgeInsets all20 = EdgeInsets.all(px20);
+  static const EdgeInsets all24 = EdgeInsets.all(px24);
 
   static const EdgeInsets h8 = EdgeInsets.symmetric(horizontal: px8);
   static const EdgeInsets h12 = EdgeInsets.symmetric(horizontal: px12);
