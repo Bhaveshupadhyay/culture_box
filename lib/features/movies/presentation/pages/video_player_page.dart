@@ -75,7 +75,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
         httpHeaders: headers,
       );
 
-      await _videoPlayerController.initialize();
+      await _videoPlayerController?.initialize();
 
       _chewieController = ChewieController(
         videoPlayerController: _videoPlayerController!,
