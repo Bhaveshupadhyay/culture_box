@@ -38,8 +38,20 @@ jobs:
           
           APPLE_TEAM_ID=$(security cms -D -i $PP_PATH | awk '/<key>TeamIdentifier<\/key>/{getline; print}' | sed -e 's/<[^>]*>//g' | tr -d ' \t\n\r')
           PROVISIONING_PROFILE_UUID=$(security cms -D -i $PP_PATH | awk '/<key>UUID<\/key>/{getline; print}' | sed -e 's/<[^>]*>//g' | tr -d ' \t\n\r')
+          
+          if [ -z "$APPLE_TEAM_ID" ] || [ -z "$PROVISIONING_PROFILE_UUID" ]; then
+            echo "Error: Failed to extract Team ID or UUID from the Provisioning Profile. Is the base64 secret correct?"
+            exit 1
+          fi
+          
+          echo "Extracted Team ID: $APPLE_TEAM_ID"
+          echo "Extracted UUID: $PROVISIONING_PROFILE_UUID"
+          
           echo "APPLE_TEAM_ID=$APPLE_TEAM_ID" >> $GITHUB_ENV
           echo "PROVISIONING_PROFILE_UUID=$PROVISIONING_PROFILE_UUID" >> $GITHUB_ENV
+          
+          echo "=== Installed Certificates ==="
+          security find-identity -v -p codesigning
 
       - name: Setup Flutter Environment
         uses: subosito/flutter-action@v2
