@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/widgets/app_network_image.dart';
 import '../../data/models/movie.dart';
 import '../pages/details_page.dart';
 
@@ -70,7 +71,7 @@ class _HeroCarouselState extends State<HeroCarousel> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => DetailsPage(movie: movie),
+            builder: (context) => DetailsPage(movieId: movie.id),
           ),
         );
       },
@@ -78,13 +79,9 @@ class _HeroCarouselState extends State<HeroCarousel> {
         fit: StackFit.expand,
         children: [
           // Backdrop image
-          Image.network(
-            movie.backdropUrl,
+          AppNetworkImage(
+            imageUrl: movie.backdropUrl,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) => Container(
-              color: AppColors.surface,
-              child: const Icon(Icons.movie, size: 60, color: Colors.grey),
-            ),
           ),
           // Gradient overlays
           Container(
@@ -196,7 +193,7 @@ class _HeroCarouselState extends State<HeroCarousel> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => DetailsPage(movie: movie),
+                          builder: (context) => DetailsPage(movieId: movie.id),
                         ),
                       );
                     },

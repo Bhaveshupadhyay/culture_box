@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/widgets/app_network_image.dart';
 import '../../data/models/movie.dart';
 import '../pages/details_page.dart';
 
@@ -22,7 +23,7 @@ class MovieCard extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => DetailsPage(movie: movie),
+            builder: (context) => DetailsPage(movieId: movie.id),
           ),
         );
       },
@@ -45,15 +46,9 @@ class MovieCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            Image.network(
-              movie.posterUrl,
+            AppNetworkImage(
+              imageUrl: movie.posterUrl,
               fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                color: AppColors.surface,
-                child: const Center(
-                  child: Icon(Icons.movie, size: 40, color: Colors.grey),
-                ),
-              ),
             ),
             // Gradient Overlay
             Container(
