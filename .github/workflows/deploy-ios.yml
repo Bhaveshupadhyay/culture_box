@@ -6,6 +6,7 @@ on:
 
 jobs:
   deploy-ios:
+    if: "contains(github.event.head_commit.message, '[deploy]')"
     runs-on: macos-latest
 
     steps:
@@ -25,13 +26,13 @@ jobs:
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
           CERTIFICATE_PATH=$RUNNER_TEMP/build.p12
-          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+          printf "%s" "$BUILD_CERTIFICATE_BASE64" | base64 -D -o $CERTIFICATE_PATH
           security import $CERTIFICATE_PATH -k $KEYCHAIN_PATH -P "$P12_PASSWORD" -A -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | tr -d '"')
 
           PP_PATH=$RUNNER_TEMP/profile.mobileprovision
-          echo -n "$PROVISIONING_PROFILE_BASE64" | base64 --decode -o $PP_PATH
+          printf "%s" "$PROVISIONING_PROFILE_BASE64" | base64 -D -o $PP_PATH
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
@@ -45,9 +46,38 @@ jobs:
       - name: Install Flutter Dependencies
         run: flutter pub get
 
+      - name: Generate ExportOptions.plist
+        env:
+          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+          PROVISIONING_PROFILE_NAME: ${{ vars.PROVISIONING_PROFILE_NAME }}
+        run: |
+          cat <<EOF > ios/ExportOptions.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.plist">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>app-store</string>
+              <key>teamID</key>
+              <string>${APPLE_TEAM_ID}</string>
+              <key>uploadSymbols</key>
+              <true/>
+              <key>uploadBitcode</key>
+              <false/>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>com.example.cultureBox</key>
+                  <string>${PROVISIONING_PROFILE_NAME}</string>
+              </dict>
+          </dict>
+          </plist>
+          EOF
+
       - name: Build IPA
         run: |
-          flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+          flutter build ipa --release --build-name=1.0.${{ github.run_number }} --build-number=${{ github.run_number }} --export-options-plist=ios/ExportOptions.plist
 
       - name: Upload Build to App Store Connect / TestFlight
         env:
@@ -56,7 +86,8 @@ jobs:
           APP_STORE_CONNECT_PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY_BASE64 }}
         run: |
           mkdir -p ~/.appstoreconnect/private_keys
-          echo -n "$APP_STORE_CONNECT_PRIVATE_KEY_BASE64" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8
+          printf "%s" "$APP_STORE_CONNECT_PRIVATE_KEY_BASE64" | base64 -D > ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8
+          chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8
 
           xcrun altool --upload-app \
             --type ios \
