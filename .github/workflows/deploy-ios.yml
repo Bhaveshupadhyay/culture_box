@@ -52,6 +52,7 @@ jobs:
           PROVISIONING_PROFILE_NAME: ${{ vars.PROVISIONING_PROFILE_NAME }}
         run: |
           sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/Runner.xcodeproj/project.pbxproj
+          sed -i '' 's/"iPhone Developer"/"Apple Distribution"/g' ios/Runner.xcodeproj/project.pbxproj
           echo "PROVISIONING_PROFILE_SPECIFIER=$PROVISIONING_PROFILE_NAME" >> ios/Flutter/Release.xcconfig
           echo "CODE_SIGN_IDENTITY=Apple Distribution" >> ios/Flutter/Release.xcconfig
           echo "DEVELOPMENT_TEAM=$APPLE_TEAM_ID" >> ios/Flutter/Release.xcconfig
