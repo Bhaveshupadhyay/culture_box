@@ -35,6 +35,11 @@ jobs:
           printf "%s" "$PROVISIONING_PROFILE_BASE64" | tr -d '\n\r ' | base64 -D -o $PP_PATH
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+          
+          APPLE_TEAM_ID=$(security cms -D -i $PP_PATH | awk '/<key>TeamIdentifier<\/key>/{getline; print}' | sed -e 's/<[^>]*>//g' | tr -d ' \t\n\r')
+          PROVISIONING_PROFILE_UUID=$(security cms -D -i $PP_PATH | awk '/<key>UUID<\/key>/{getline; print}' | sed -e 's/<[^>]*>//g' | tr -d ' \t\n\r')
+          echo "APPLE_TEAM_ID=$APPLE_TEAM_ID" >> $GITHUB_ENV
+          echo "PROVISIONING_PROFILE_UUID=$PROVISIONING_PROFILE_UUID" >> $GITHUB_ENV
 
       - name: Setup Flutter Environment
         uses: subosito/flutter-action@v2
@@ -47,20 +52,14 @@ jobs:
         run: flutter pub get
 
       - name: Configure Code Signing
-        env:
-          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
-          PROVISIONING_PROFILE_NAME: ${{ vars.PROVISIONING_PROFILE_NAME }}
         run: |
           sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/g' ios/Runner.xcodeproj/project.pbxproj
           sed -i '' 's/"iPhone Developer"/"Apple Distribution"/g' ios/Runner.xcodeproj/project.pbxproj
-          echo "PROVISIONING_PROFILE_SPECIFIER=$PROVISIONING_PROFILE_NAME" >> ios/Flutter/Release.xcconfig
+          echo "PROVISIONING_PROFILE_SPECIFIER=$PROVISIONING_PROFILE_UUID" >> ios/Flutter/Release.xcconfig
           echo "CODE_SIGN_IDENTITY=Apple Distribution" >> ios/Flutter/Release.xcconfig
           echo "DEVELOPMENT_TEAM=$APPLE_TEAM_ID" >> ios/Flutter/Release.xcconfig
 
       - name: Generate ExportOptions.plist
-        env:
-          APPLE_TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
-          PROVISIONING_PROFILE_NAME: ${{ vars.PROVISIONING_PROFILE_NAME }}
         run: |
           cat <<EOF > ios/ExportOptions.plist
           <?xml version="1.0" encoding="UTF-8"?>
@@ -80,7 +79,7 @@ jobs:
               <key>provisioningProfiles</key>
               <dict>
                   <key>com.example.cultureBox</key>
-                  <string>${PROVISIONING_PROFILE_NAME}</string>
+                  <string>${PROVISIONING_PROFILE_UUID}</string>
               </dict>
           </dict>
           </plist>
