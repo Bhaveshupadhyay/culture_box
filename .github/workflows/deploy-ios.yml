@@ -26,13 +26,13 @@ jobs:
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
 
           CERTIFICATE_PATH=$RUNNER_TEMP/build.p12
-          printf "%s" "$BUILD_CERTIFICATE_BASE64" | base64 -D -o $CERTIFICATE_PATH
+          printf "%s" "$BUILD_CERTIFICATE_BASE64" | tr -d '\n\r ' | base64 -D -o $CERTIFICATE_PATH
           security import $CERTIFICATE_PATH -k $KEYCHAIN_PATH -P "$P12_PASSWORD" -A -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | tr -d '"')
 
           PP_PATH=$RUNNER_TEMP/profile.mobileprovision
-          printf "%s" "$PROVISIONING_PROFILE_BASE64" | base64 -D -o $PP_PATH
+          printf "%s" "$PROVISIONING_PROFILE_BASE64" | tr -d '\n\r ' | base64 -D -o $PP_PATH
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
 
@@ -86,7 +86,7 @@ jobs:
           APP_STORE_CONNECT_PRIVATE_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY_BASE64 }}
         run: |
           mkdir -p ~/.appstoreconnect/private_keys
-          printf "%s" "$APP_STORE_CONNECT_PRIVATE_KEY_BASE64" | base64 -D > ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8
+          printf "%s" "$APP_STORE_CONNECT_PRIVATE_KEY_BASE64" | tr -d '\n\r ' | base64 -D > ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8
           chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${APP_STORE_CONNECT_KEY_ID}.p8
 
           xcrun altool --upload-app \
