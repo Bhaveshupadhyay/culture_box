@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../app/di/service_locator.dart';
@@ -18,6 +19,7 @@ class _SearchPageState extends State<SearchPage> {
   late final TextEditingController _searchController;
   late final SearchCubit _searchCubit;
   String _selectedGenre = 'All';
+  Timer? _debounce;
 
   final List<String> _genres = [
     'All',
@@ -47,16 +49,21 @@ class _SearchPageState extends State<SearchPage> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     _searchCubit.close();
     super.dispose();
   }
 
   void _triggerSearch() {
-    _searchCubit.performSearch(
-      query: _searchController.text.trim(),
-      genre: _selectedGenre == 'All' ? null : _selectedGenre,
-    );
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      if (!mounted) return;
+      _searchCubit.performSearch(
+        query: _searchController.text.trim(),
+        genre: _selectedGenre == 'All' ? null : _selectedGenre,
+      );
+    });
   }
 
   @override

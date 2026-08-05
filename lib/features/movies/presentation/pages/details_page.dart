@@ -79,9 +79,7 @@ class _DetailsPageState extends State<DetailsPage> {
   Widget build(BuildContext context) {
     return BlocProvider.value(
       value: _detailsCubit,
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: BlocBuilder<MovieDetailsCubit, MovieDetailsState>(
+      child: BlocBuilder<MovieDetailsCubit, MovieDetailsState>(
           builder: (context, state) {
             if (state is MovieDetailsLoading || state is MovieDetailsInitial) {
               return Scaffold(
@@ -160,7 +158,9 @@ class _DetailsPageState extends State<DetailsPage> {
               final trailerUrl = state.trailerUrl;
               final videoUrl = state.videoUrl;
 
-              return SingleChildScrollView(
+              return Scaffold(
+                backgroundColor: AppColors.background,
+                body: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -329,13 +329,14 @@ class _DetailsPageState extends State<DetailsPage> {
                     ),
                   ],
                 ),
-              );
+              ));
             }
 
-            return const SizedBox.shrink();
+            return const Scaffold(
+              backgroundColor: AppColors.background,
+            );
           },
         ),
-      ),
     );
   }
 

@@ -22,7 +22,7 @@ class VideoPlayerPage extends StatefulWidget {
 }
 
 class _VideoPlayerPageState extends State<VideoPlayerPage> {
-  late VideoPlayerController _videoPlayerController;
+  VideoPlayerController? _videoPlayerController;
   ChewieController? _chewieController;
   bool _hasError = false;
   String _errorMessage = '';
@@ -78,7 +78,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
       await _videoPlayerController.initialize();
 
       _chewieController = ChewieController(
-        videoPlayerController: _videoPlayerController,
+        videoPlayerController: _videoPlayerController!,
         autoPlay: true,
         looping: false,
         allowFullScreen: true,
@@ -115,7 +115,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   @override
   void dispose() {
     _chewieController?.dispose();
-    _videoPlayerController.dispose();
+    _videoPlayerController?.dispose();
     _resetOrientation();
     super.dispose();
   }
@@ -142,11 +142,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                         textAlign: TextAlign.center,
                       ),
                       AppSpacing.vGap8,
-                      SelectableText(
-                        'URL: ${widget.videoUrl}',
-                        style: AppTextStyles.bodySmall.copyWith(color: Colors.white54),
-                        textAlign: TextAlign.center,
-                      ),
+                      // URL removed to prevent leaking sensitive signed query params
                       AppSpacing.vGap24,
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
