@@ -36,8 +36,9 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
           
-          APPLE_TEAM_ID=$(security cms -D -i $PP_PATH | awk '/<key>TeamIdentifier<\/key>/{getline; print}' | sed -e 's/<[^>]*>//g' | tr -d ' \t\n\r')
-          PROVISIONING_PROFILE_UUID=$(security cms -D -i $PP_PATH | awk '/<key>UUID<\/key>/{getline; print}' | sed -e 's/<[^>]*>//g' | tr -d ' \t\n\r')
+          security cms -D -i $PP_PATH > profile.plist
+          APPLE_TEAM_ID=$(/usr/libexec/PlistBuddy -c "Print :TeamIdentifier:0" profile.plist)
+          PROVISIONING_PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" profile.plist)
           
           if [ -z "$APPLE_TEAM_ID" ] || [ -z "$PROVISIONING_PROFILE_UUID" ]; then
             echo "Error: Failed to extract Team ID or UUID from the Provisioning Profile. Is the base64 secret correct?"
