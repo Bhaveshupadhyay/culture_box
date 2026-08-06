@@ -26,6 +26,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   bool _isInitialized = false;
   bool _hasError = false;
   String _errorMessage = '';
+  bool _isRetrying = false;
 
   // Overlay & UI Control States
   bool _showControls = true;
@@ -99,6 +100,14 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
 
       await _controller!.initialize().timeout(const Duration(seconds: 15));
       _controller!.addListener(_onPlayerStateChanged);
+
+      if (_playbackSpeed != 1.0) {
+        await _controller!.setPlaybackSpeed(_playbackSpeed);
+      }
+      if (_isLooping) {
+        await _controller!.setLooping(true);
+      }
+
       _controller!.play();
 
       if (mounted) {
@@ -112,6 +121,10 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
       }
     } catch (e) {
       debugPrint('[VideoPlayer] Error initializing player: $e');
+      _controller?.removeListener(_onPlayerStateChanged);
+      _controller?.dispose();
+      _controller = null;
+
       if (mounted) {
         setState(() {
           _hasError = true;
@@ -663,10 +676,12 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                         ignoring: !_showControls,
                         child: Stack(
                           children: [
-                            // Scrim Background Overlay
+                            // Scrim Background Overlay (Visual only, allow taps to reach GestureDetector)
                             Positioned.fill(
-                              child: Container(
-                                color: Colors.black.withValues(alpha: 0.45),
+                              child: IgnorePointer(
+                                child: Container(
+                                  color: Colors.black.withValues(alpha: 0.45),
+                                ),
                               ),
                             ),
 
@@ -877,6 +892,10 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   }
 
   Widget _buildYouTubeProgressBar() {
+    if (_controller == null || !_controller!.value.isInitialized || _controller!.value.duration <= Duration.zero) {
+      return const SizedBox(height: 28);
+    }
+
     final duration = _controller!.value.duration.inMilliseconds.toDouble();
     final position = _isDraggingSlider
         ? _sliderDragValue
@@ -996,14 +1015,22 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
                     backgroundColor: const Color(0xFFFF0000),
                     foregroundColor: Colors.white,
                   ),
-                  onPressed: () {
+                  onPressed: () async {
+                    if (_isRetrying) return;
                     setState(() {
+                      _isRetrying = true;
                       _hasError = false;
                       _isInitialized = false;
                     });
+                    _controller?.removeListener(_onPlayerStateChanged);
                     _controller?.dispose();
                     _controller = null;
-                    _initializePlayer();
+                    await _initializePlayer();
+                    if (mounted) {
+                      setState(() {
+                        _isRetrying = false;
+                      });
+                    }
                   },
                   icon: const Icon(Icons.refresh),
                   label: const Text('Retry'),
