@@ -58,7 +58,7 @@ class HomePageShimmer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      physics: const NeverScrollableScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -181,19 +181,22 @@ class DetailsPageShimmer extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Meta Badges Shimmer Row
-                Row(
-                  children: const [
-                    ShimmerBox(width: 50, height: 26, borderRadius: 6),
-                    SizedBox(width: 8),
-                    ShimmerBox(width: 50, height: 26, borderRadius: 6),
-                    SizedBox(width: 8),
-                    ShimmerBox(width: 60, height: 26, borderRadius: 6),
-                    SizedBox(width: 8),
-                    ShimmerBox(width: 70, height: 26, borderRadius: 6),
-                    SizedBox(width: 8),
-                    ShimmerBox(width: 60, height: 26, borderRadius: 6),
-                  ],
+                // Meta Badges Shimmer Row (Horizontal scrollable to prevent flex overflow)
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: const [
+                      ShimmerBox(width: 50, height: 26, borderRadius: 6),
+                      SizedBox(width: 8),
+                      ShimmerBox(width: 50, height: 26, borderRadius: 6),
+                      SizedBox(width: 8),
+                      ShimmerBox(width: 60, height: 26, borderRadius: 6),
+                      SizedBox(width: 8),
+                      ShimmerBox(width: 70, height: 26, borderRadius: 6),
+                      SizedBox(width: 8),
+                      ShimmerBox(width: 60, height: 26, borderRadius: 6),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 16),
 

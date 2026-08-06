@@ -77,10 +77,7 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
   }
 
   Future<void> _initializePlayer() async {
-    debugPrint('[YouTubePlayer] ========================================');
-    debugPrint('[YouTubePlayer] Playing title: ${widget.title}');
-    debugPrint('[YouTubePlayer] Video URL: ${widget.videoUrl}');
-    debugPrint('[YouTubePlayer] ========================================');
+    debugPrint('[VideoPlayer] Playing title: ${widget.title}');
 
     try {
       final uri = Uri.parse(widget.videoUrl);
@@ -100,23 +97,25 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
         httpHeaders: headers,
       );
 
-      await _controller!.initialize();
+      await _controller!.initialize().timeout(const Duration(seconds: 15));
       _controller!.addListener(_onPlayerStateChanged);
       _controller!.play();
 
       if (mounted) {
         setState(() {
           _isInitialized = true;
+          _hasError = false;
+          _errorMessage = '';
           _volume = _controller!.value.volume;
         });
         _startHideTimer();
       }
     } catch (e) {
-      debugPrint('[YouTubePlayer] Error initializing player: $e');
+      debugPrint('[VideoPlayer] Error initializing player: $e');
       if (mounted) {
         setState(() {
           _hasError = true;
-          _errorMessage = 'Failed to load video stream (HTTP Error / 403).';
+          _errorMessage = 'Failed to load video stream. Please check your internet connection and try again.';
         });
       }
     }
@@ -541,90 +540,96 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
 
                   // 3. Double-tap Rewind Feedback (-10s) Overlay
                   if (_showLeftFeedback)
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        width: constraints.maxWidth * 0.4,
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: const BorderRadius.horizontal(right: Radius.circular(100)),
-                        ),
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.fast_rewind, color: Colors.white, size: 42),
-                            SizedBox(height: 4),
-                            Text(
-                              '-10 seconds',
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                            ),
-                          ],
+                    IgnorePointer(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: Container(
+                          width: constraints.maxWidth * 0.4,
+                          height: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: const BorderRadius.horizontal(right: Radius.circular(100)),
+                          ),
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.fast_rewind, color: Colors.white, size: 42),
+                              SizedBox(height: 4),
+                              Text(
+                                '-10 seconds',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
 
                   // 4. Double-tap Fast-Forward Feedback (+10s) Overlay
                   if (_showRightFeedback)
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: Container(
-                        width: constraints.maxWidth * 0.4,
-                        height: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
-                          borderRadius: const BorderRadius.horizontal(left: Radius.circular(100)),
-                        ),
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.fast_forward, color: Colors.white, size: 42),
-                            SizedBox(height: 4),
-                            Text(
-                              '+10 seconds',
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                            ),
-                          ],
+                    IgnorePointer(
+                      child: Align(
+                        alignment: Alignment.centerRight,
+                        child: Container(
+                          width: constraints.maxWidth * 0.4,
+                          height: double.infinity,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            borderRadius: const BorderRadius.horizontal(left: Radius.circular(100)),
+                          ),
+                          child: const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.fast_forward, color: Colors.white, size: 42),
+                              SizedBox(height: 4),
+                              Text(
+                                '+10 seconds',
+                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
 
                   // 5. Volume Drag Level Indicator Overlay
                   if (_showVolumeOverlay)
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.75),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _volume == 0 ? Icons.volume_off : Icons.volume_up,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                            const SizedBox(width: 12),
-                            SizedBox(
-                              width: 100,
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(4),
-                                child: LinearProgressIndicator(
-                                  value: _volume,
-                                  backgroundColor: Colors.white24,
-                                  valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF0000)),
-                                  minHeight: 6,
+                    IgnorePointer(
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.75),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _volume == 0 ? Icons.volume_off : Icons.volume_up,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 12),
+                              SizedBox(
+                                width: 100,
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: LinearProgressIndicator(
+                                    value: _volume,
+                                    backgroundColor: Colors.white24,
+                                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF0000)),
+                                    minHeight: 6,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              '${(_volume * 100).toInt()}%',
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                            ),
-                          ],
+                              const SizedBox(width: 12),
+                              Text(
+                                '${(_volume * 100).toInt()}%',
+                                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -983,13 +988,36 @@ class _VideoPlayerPageState extends State<VideoPlayerPage> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF0000),
-                foregroundColor: Colors.white,
-              ),
-              onPressed: _handlePop,
-              child: const Text('Back'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFF0000),
+                    foregroundColor: Colors.white,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _hasError = false;
+                      _isInitialized = false;
+                    });
+                    _controller?.dispose();
+                    _controller = null;
+                    _initializePlayer();
+                  },
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                ),
+                const SizedBox(width: 16),
+                OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white38),
+                  ),
+                  onPressed: _handlePop,
+                  child: const Text('Back'),
+                ),
+              ],
             ),
           ],
         ),
