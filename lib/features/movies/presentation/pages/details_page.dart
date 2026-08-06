@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../app/di/service_locator.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../core/widgets/app_network_image.dart';
+import '../../../../core/widgets/shimmer_loading.dart';
 import '../../../auth/presentation/pages/login_page.dart';
 import '../../data/models/movie.dart';
 import '../bloc/movie_details_cubit.dart';
@@ -91,19 +92,7 @@ class _DetailsPageState extends State<DetailsPage> {
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
-                body: const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      CircularProgressIndicator(color: AppColors.logoGold),
-                      AppSpacing.vGap16,
-                      Text(
-                        'Loading movie details...',
-                        style: TextStyle(color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                ),
+                body: const DetailsPageShimmer(),
               );
             }
 

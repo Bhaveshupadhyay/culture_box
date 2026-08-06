@@ -4,6 +4,7 @@ import '../../../../app/di/service_locator.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../core/widgets/culturebox_logo.dart';
 import '../../../../core/widgets/custom_drawer.dart';
+import '../../../../core/widgets/shimmer_loading.dart';
 import '../bloc/homepage_layout_bloc.dart';
 import '../widgets/sdui_section_item.dart';
 import 'search_page.dart';
@@ -58,11 +59,7 @@ class _HomePageState extends State<HomePage> {
           child: BlocBuilder<HomepageLayoutBloc, HomepageLayoutState>(
             builder: (context, state) {
               if (state is HomepageLayoutLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.logoGold,
-                  ),
-                );
+                return const HomePageShimmer();
               }
 
               if (state is HomepageLayoutError) {

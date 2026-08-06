@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../app/di/service_locator.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/widgets/shimmer_loading.dart';
 import '../bloc/search_cubit.dart';
 import '../widgets/movie_card.dart';
 
@@ -147,9 +148,7 @@ class _SearchPageState extends State<SearchPage> {
               child: BlocBuilder<SearchCubit, SearchState>(
                 builder: (context, state) {
                   if (state is SearchLoading) {
-                    return const Center(
-                      child: CircularProgressIndicator(color: AppColors.logoGold),
-                    );
+                    return const SearchPageShimmer();
                   }
 
                   if (state is SearchError) {

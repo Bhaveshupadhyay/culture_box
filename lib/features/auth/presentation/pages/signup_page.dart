@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../core/widgets/culturebox_logo.dart';
+import '../../../../core/widgets/shimmer_loading.dart';
 import '../../../movies/presentation/pages/home_page.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_event.dart';
@@ -216,14 +217,7 @@ class _SignupPageState extends State<SignupPage> {
                           ),
                           onPressed: isLoading ? null : _onSignupSubmitted,
                           child: isLoading
-                              ? const SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.black,
-                                    strokeWidth: 2.5,
-                                  ),
-                                )
+                              ? const ButtonShimmerLoader(width: 70, height: 16)
                               : Text(
                                   'SIGN UP',
                                   style: AppTextStyles.buttonTextDark.copyWith(fontSize: 16),
