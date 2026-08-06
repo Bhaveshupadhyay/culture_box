@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/widgets/shimmer_loading.dart';
 import '../../../../core/widgets/culturebox_logo.dart';
 import '../../../movies/presentation/pages/home_page.dart';
 import '../bloc/auth_bloc.dart';
@@ -176,14 +177,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           onPressed: isLoading ? null : _onLoginSubmitted,
                           child: isLoading
-                              ? const SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(
-                                    color: Colors.black,
-                                    strokeWidth: 2.5,
-                                  ),
-                                )
+                              ? const ButtonShimmerLoader(width: 70, height: 16)
                               : Text(
                                   'SIGN IN',
                                   style: AppTextStyles.buttonTextDark.copyWith(fontSize: 16),
