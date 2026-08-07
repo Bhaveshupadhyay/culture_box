@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1029716714734",
+    "project_id": "cultureboxtv-e4eb7",
+    "storage_bucket": "cultureboxtv-e4eb7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1029716714734:android:8a5822bb722c545f087fff",
+        "android_client_info": {
+          "package_name": "app.culturebox.com"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAM0MMhF7F829BOwJ5efFm96oVjA5qtW6I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
