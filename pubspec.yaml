@@ -43,6 +43,8 @@ dependencies:
   shimmer: ^3.0.0
   video_player: ^2.13.0
   chewie: ^1.14.1
+  firebase_core: ^4.13.0
+  firebase_auth: ^6.5.7
 
 dev_dependencies:
   flutter_test:

@@ -1,4 +1,4 @@
-package com.example.culture_box
+package app.culturebox.com
 
 import io.flutter.embedding.android.FlutterActivity
 
