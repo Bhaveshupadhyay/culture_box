@@ -56,7 +56,6 @@ class DefaultFirebaseOptions {
     projectId: 'cultureboxtv-e4eb7',
     storageBucket: 'cultureboxtv-e4eb7.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyD0sjMPBe6IEUpgd8gsy7ikHM-oD8ChCEc',
     appId: '1:1029716714734:ios:e17c1db040cc17d4087fff',
