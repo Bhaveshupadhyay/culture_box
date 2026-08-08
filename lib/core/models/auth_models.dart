@@ -36,11 +36,19 @@ class LoginResponse extends Equatable {
   });
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    final Map<String, dynamic> map = (json['data'] != null && json['data'] is Map<String, dynamic>)
+        ? json['data'] as Map<String, dynamic>
+        : json;
+
     return LoginResponse(
-      accessToken: json['accessToken'] as String? ?? json['access_token'] as String?,
-      reasonCode: json['reasonCode'] as String? ?? json['reason_code'] as String?,
-      user: json['user'] != null && json['user'] is Map<String, dynamic>
-          ? User.fromJson(json['user'] as Map<String, dynamic>)
+      accessToken: map['accessToken'] as String? ??
+          map['access_token'] as String? ??
+          map['token'] as String?,
+      reasonCode: map['reasonCode'] as String? ??
+          map['reason_code'] as String? ??
+          json['message'] as String?,
+      user: map['user'] != null && map['user'] is Map<String, dynamic>
+          ? User.fromJson(map['user'] as Map<String, dynamic>)
           : null,
     );
   }

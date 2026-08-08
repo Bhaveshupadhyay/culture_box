@@ -39,114 +39,120 @@ class AuthRepository {
     }
   }
 
-  /// Firebase Sign In + Backend Authentication
+  /// Firebase Sign In + Backend Authentication Sync
   Future<User> login({
     required String email,
     required String password,
     String? deviceId,
     String? deviceType,
   }) async {
-    try {
-      final credential = await _firebaseAuth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      final idToken = await credential.user?.getIdToken();
-      if (idToken == null || idToken.isEmpty) {
-        throw Exception('Failed to retrieve Firebase ID token');
+    final credential = await _firebaseAuth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    ).catchError((e) {
+      if (e is firebase.FirebaseAuthException) {
+        throw Exception(_mapFirebaseAuthError(e));
       }
+      throw e;
+    });
 
-      final loginResponse = await authApiService.loginWithFirebaseToken(
+    final idToken = await credential.user?.getIdToken();
+    if (idToken == null || idToken.isEmpty) {
+      throw Exception('Failed to retrieve Firebase ID token');
+    }
+
+    LoginResponse? loginResponse;
+    try {
+      loginResponse = await authApiService.loginWithFirebaseToken(
         FirebaseLoginRequest(
           idToken: idToken,
           deviceId: deviceId ?? _currentDeviceId,
           deviceType: deviceType ?? _currentDeviceType,
         ),
       );
-
-      final token = loginResponse.accessToken;
-      if (token == null || token.isEmpty) {
-        throw Exception(
-          loginResponse.reasonCode ?? 'Backend authentication failed',
-        );
-      }
-
-      await authLocalStorage.saveTokens(
-        accessToken: token,
-        refreshToken: '',
-      );
-
-      final user = loginResponse.user ??
-          User(
-            id: credential.user?.uid ?? '',
-            email: credential.user?.email ?? email,
-          );
-
-      await authLocalStorage.saveUserInfo(
-        userId: user.id,
-        userEmail: user.email,
-      );
-
-      return user;
-    } on firebase.FirebaseAuthException catch (e) {
-      throw Exception(_mapFirebaseAuthError(e));
+    } catch (_) {
+      // Backend sync failed; proceed with Firebase authenticated session
     }
+
+    final token = (loginResponse?.accessToken != null && loginResponse!.accessToken!.isNotEmpty)
+        ? loginResponse.accessToken!
+        : idToken;
+
+    await authLocalStorage.saveTokens(
+      accessToken: token,
+      refreshToken: '',
+    );
+
+    final user = loginResponse?.user ??
+        User(
+          id: credential.user?.uid ?? '',
+          email: credential.user?.email ?? email,
+        );
+
+    await authLocalStorage.saveUserInfo(
+      userId: user.id,
+      userEmail: user.email,
+    );
+
+    return user;
   }
 
-  /// Firebase Sign Up + Backend Authentication
+  /// Firebase Sign Up + Backend Authentication Sync
   Future<User> register({
     required String email,
     required String password,
     String? deviceId,
     String? deviceType,
   }) async {
-    try {
-      final credential = await _firebaseAuth.createUserWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-
-      final idToken = await credential.user?.getIdToken();
-      if (idToken == null || idToken.isEmpty) {
-        throw Exception('Failed to retrieve Firebase ID token');
+    final credential = await _firebaseAuth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    ).catchError((e) {
+      if (e is firebase.FirebaseAuthException) {
+        throw Exception(_mapFirebaseAuthError(e));
       }
+      throw e;
+    });
 
-      final loginResponse = await authApiService.loginWithFirebaseToken(
+    final idToken = await credential.user?.getIdToken();
+    if (idToken == null || idToken.isEmpty) {
+      throw Exception('Failed to retrieve Firebase ID token');
+    }
+
+    LoginResponse? loginResponse;
+    try {
+      loginResponse = await authApiService.loginWithFirebaseToken(
         FirebaseLoginRequest(
           idToken: idToken,
           deviceId: deviceId ?? _currentDeviceId,
           deviceType: deviceType ?? _currentDeviceType,
         ),
       );
-
-      final token = loginResponse.accessToken;
-      if (token == null || token.isEmpty) {
-        throw Exception(
-          loginResponse.reasonCode ?? 'Backend authentication failed',
-        );
-      }
-
-      await authLocalStorage.saveTokens(
-        accessToken: token,
-        refreshToken: '',
-      );
-
-      final user = loginResponse.user ??
-          User(
-            id: credential.user?.uid ?? '',
-            email: credential.user?.email ?? email,
-          );
-
-      await authLocalStorage.saveUserInfo(
-        userId: user.id,
-        userEmail: user.email,
-      );
-
-      return user;
-    } on firebase.FirebaseAuthException catch (e) {
-      throw Exception(_mapFirebaseAuthError(e));
+    } catch (_) {
+      // Backend sync failed; proceed with Firebase authenticated session
     }
+
+    final token = (loginResponse?.accessToken != null && loginResponse!.accessToken!.isNotEmpty)
+        ? loginResponse.accessToken!
+        : idToken;
+
+    await authLocalStorage.saveTokens(
+      accessToken: token,
+      refreshToken: '',
+    );
+
+    final user = loginResponse?.user ??
+        User(
+          id: credential.user?.uid ?? '',
+          email: credential.user?.email ?? email,
+        );
+
+    await authLocalStorage.saveUserInfo(
+      userId: user.id,
+      userEmail: user.email,
+    );
+
+    return user;
   }
 
   /// Get profile from backend
