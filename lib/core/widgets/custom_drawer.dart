@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../app/di/service_locator.dart';
 import '../../app/theme/app_theme.dart';
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
-import '../../features/auth/presentation/bloc/auth_event.dart';
 import '../../features/auth/presentation/bloc/auth_state.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/movies/presentation/pages/home_page.dart';
@@ -13,41 +12,10 @@ import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/subscription/presentation/pages/choose_plan_page.dart';
 import 'culturebox_logo.dart';
+import 'sign_out_dialog.dart';
 
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
-
-  void _confirmSignOut(BuildContext context, AuthBloc authBloc) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: Text('Sign Out', style: AppTextStyles.detailsTitle),
-        content: Text(
-          'Are you sure you want to sign out of your account?',
-          style: AppTextStyles.bodySecondary,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.logoRedOrange,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () {
-              Navigator.pop(dialogContext); // Close dialog
-              Navigator.pop(context);       // Close drawer
-              authBloc.add(AuthLogoutRequested());
-            },
-            child: const Text('SIGN OUT'),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -188,7 +156,7 @@ class CustomDrawer extends StatelessWidget {
                           context,
                           icon: Icons.logout,
                           title: 'Sign Out',
-                          onTap: () => _confirmSignOut(context, authBloc),
+                          onTap: () => SignOutDialog.show(context, authBloc, closeDrawerOnConfirm: true),
                         )
                       else
                         _buildDrawerTile(

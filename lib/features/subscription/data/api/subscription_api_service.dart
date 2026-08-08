@@ -10,14 +10,19 @@ class SubscriptionApiService {
   /// Get available plans (GET /payments/plans)
   Future<List<PlanModel>> getPlans() async {
     final response = await apiClient.get(ApiEndpoints.paymentsPlans);
+    if (response.data is! Map<String, dynamic>) return [];
     final json = response.data as Map<String, dynamic>;
-    if (json.containsKey('data')) {
+    if (json.containsKey('data') && json['data'] != null) {
       final data = json['data'];
       if (data is List) {
-        return data.map((e) => PlanModel.fromJson(e as Map<String, dynamic>)).toList();
-      } else if (data is Map && data.containsKey('plans')) {
+        return data
+            .whereType<Map<String, dynamic>>()
+            .map((e) => PlanModel.fromJson(e))
+            .toList();
+      } else if (data is Map<String, dynamic> && data.containsKey('plans') && data['plans'] is List) {
         return (data['plans'] as List)
-            .map((e) => PlanModel.fromJson(e as Map<String, dynamic>))
+            .whereType<Map<String, dynamic>>()
+            .map((e) => PlanModel.fromJson(e))
             .toList();
       }
     }
@@ -33,16 +38,19 @@ class SubscriptionApiService {
         'device': device,
       },
     );
+    if (response.data is! Map<String, dynamic>) {
+      throw Exception('Invalid response format from checkout endpoint');
+    }
     final json = response.data as Map<String, dynamic>;
-    if (json.containsKey('data') && json['data'] is Map) {
+    if (json.containsKey('data') && json['data'] is Map<String, dynamic>) {
       final dataMap = json['data'] as Map<String, dynamic>;
-      if (dataMap.containsKey('checkout_url')) {
+      if (dataMap.containsKey('checkout_url') && dataMap['checkout_url'] is String) {
         return dataMap['checkout_url'] as String;
-      } else if (dataMap.containsKey('url')) {
+      } else if (dataMap.containsKey('url') && dataMap['url'] is String) {
         return dataMap['url'] as String;
       }
     }
-    if (json.containsKey('checkout_url')) {
+    if (json.containsKey('checkout_url') && json['checkout_url'] is String) {
       return json['checkout_url'] as String;
     }
     throw Exception('Failed to get checkout session URL');
@@ -51,7 +59,10 @@ class SubscriptionApiService {
   /// Get Subscription Status (GET /payments/status)
   Future<Map<String, dynamic>> getStatus() async {
     final response = await apiClient.get(ApiEndpoints.paymentStatus);
-    return response.data as Map<String, dynamic>;
+    if (response.data is Map<String, dynamic>) {
+      return response.data as Map<String, dynamic>;
+    }
+    return {};
   }
 
   /// Cancel Subscription (POST /payments/cancel)

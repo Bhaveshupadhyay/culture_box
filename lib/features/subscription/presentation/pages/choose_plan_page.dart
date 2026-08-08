@@ -94,8 +94,8 @@ class _ChoosePlanPageState extends State<ChoosePlanPage> {
 
       if (!launched && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Could not open payment URL: $checkoutUrl', style: const TextStyle(color: Colors.white)),
+          const SnackBar(
+            content: Text('Unable to open payment link. Please try again.', style: TextStyle(color: Colors.white)),
             backgroundColor: AppColors.surfaceSecondary,
           ),
         );
@@ -103,10 +103,13 @@ class _ChoosePlanPageState extends State<ChoosePlanPage> {
     } catch (e) {
       debugPrint('[ChoosePlanPage] Checkout error: $e');
       if (mounted) {
+        final errorMsg = e.toString().contains('subscription')
+            ? 'You already have an active subscription.'
+            : 'Unable to start checkout session. Please try again later.';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Error opening checkout session: $e',
+              errorMsg,
               style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
             ),
             backgroundColor: AppColors.surfaceSecondary,

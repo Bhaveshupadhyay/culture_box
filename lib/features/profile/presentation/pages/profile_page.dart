@@ -4,8 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../app/di/service_locator.dart';
 import '../../../../app/theme/app_theme.dart';
 import '../../../../core/models/user_model.dart';
+import '../../../../core/widgets/sign_out_dialog.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
-import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/pages/login_page.dart';
 import '../../../subscription/presentation/pages/choose_plan_page.dart';
@@ -34,40 +34,6 @@ class _ProfilePageState extends State<ProfilePage> {
         _currentUser = user;
       });
     }
-  }
-
-  void _confirmSignOut(BuildContext context, AuthBloc authBloc) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.surface,
-        title: Text('Sign Out', style: AppTextStyles.detailsTitle),
-        content: Text(
-          'Are you sure you want to sign out of your account?',
-          style: AppTextStyles.bodySecondary,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.logoRedOrange,
-              foregroundColor: Colors.white,
-            ),
-            onPressed: () {
-              Navigator.pop(dialogContext);
-              authBloc.add(AuthLogoutRequested());
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Logged out successfully')),
-              );
-            },
-            child: const Text('SIGN OUT'),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -271,7 +237,7 @@ class _ProfilePageState extends State<ProfilePage> {
                                 borderRadius: BorderRadius.circular(AppSpacing.px8),
                               ),
                             ),
-                            onPressed: () => _confirmSignOut(context, authBloc),
+                            onPressed: () => SignOutDialog.show(context, authBloc),
                             child: Text(
                               'SIGN OUT',
                               style: AppTextStyles.signOutText,
