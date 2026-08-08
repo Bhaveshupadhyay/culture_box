@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../../../core/models/layout_models.dart';
 import '../../../../core/models/movie_models.dart';
 import '../../../../core/network/api_client.dart';
@@ -8,88 +9,151 @@ class MoviesApiService {
 
   MoviesApiService(this.apiClient);
 
-  Future<HomepageLayoutResponseModel> getHomepageLayout({String screenName = 'default'}) async {
-    final response = await apiClient.get(
-      ApiEndpoints.homepageLayout,
-      queryParameters: {'screen_name': screenName},
-    );
-    return HomepageLayoutResponseModel.fromJson(response.data as Map<String, dynamic>);
+  /// Get Homepage Layout Rows (GET /users/home/layout)
+  Future<List<HomeLayoutRowModel>> getHomeLayout() async {
+    final response = await apiClient.get(ApiEndpoints.homeLayout);
+    final json = response.data as Map<String, dynamic>;
+    final list = (json['data'] as List? ?? [])
+        .map((e) => HomeLayoutRowModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+    return list;
   }
 
-  Future<SectionDataResponse> getSectionData(String endpointOrSectionId, {int page = 1, int size = 10}) async {
-    String path = endpointOrSectionId;
-    if (!path.startsWith('/')) {
-      path = '${ApiEndpoints.homepageSection}/$path';
-    }
-
-    final response = await apiClient.get(
-      path,
-      queryParameters: {
-        'page': page,
-        'size': size,
-      },
-    );
-    return SectionDataResponse.fromJson(response.data as Map<String, dynamic>);
+  /// Get Homepage Sliders (GET /users/home/sliders)
+  Future<List<HomeSliderModel>> getHomeSliders() async {
+    final response = await apiClient.get(ApiEndpoints.homeSliders);
+    final json = response.data as Map<String, dynamic>;
+    final list = (json['data'] as List? ?? [])
+        .map((e) => HomeSliderModel.fromJson(e as Map<String, dynamic>))
+        .toList();
+    return list;
   }
 
-  Future<Movie> getMovieDetails(String movieId) async {
-    final response = await apiClient.get(ApiEndpoints.movieDetails(movieId));
-    return Movie.fromJson(response.data as Map<String, dynamic>);
-  }
-
-  Future<List<MediaAssetModel>> getMovieAssets(String movieId) async {
-    final response = await apiClient.get('/api/v1/movies/$movieId/assets');
-    if (response.data is List) {
-      return (response.data as List)
-          .map((e) => MediaAssetModel.fromJson(e as Map<String, dynamic>))
-          .toList();
-    }
-    return [];
-  }
-
-  Future<SearchResponse> searchMovies({
-    String? q,
-    String? genre,
-    int page = 1,
-    int size = 20,
+  /// Get Home Page Row Content (GET /users/content/row/{id})
+  Future<PaginatedContentResponse> getContentRow(
+    int rowId, {
+    int? limit,
+    String? cursor,
   }) async {
-    final Map<String, dynamic> queryParams = {
-      'page': page,
-      'size': size,
-    };
-    if (q != null && q.isNotEmpty) queryParams['q'] = q;
-    if (genre != null && genre.isNotEmpty && genre != 'All') queryParams['genre'] = genre;
+    final queryParams = <String, dynamic>{};
+    if (limit != null) queryParams['limit'] = limit;
+    if (cursor != null) queryParams['cursor'] = cursor;
 
+    final response = await apiClient.get(
+      ApiEndpoints.contentRow(rowId),
+      queryParameters: queryParams,
+    );
+    return PaginatedContentResponse.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Get Content Details by ID (GET /users/content/{id})
+  Future<ContentDetailsModel> getContentDetails(
+    int id, {
+    int? limit,
+    String? cursor,
+    int? season,
+  }) async {
+    final queryParams = <String, dynamic>{};
+    if (limit != null) queryParams['limit'] = limit;
+    if (cursor != null) queryParams['cursor'] = cursor;
+    if (season != null) queryParams['season'] = season;
+
+    final response = await apiClient.get(
+      ApiEndpoints.contentDetails(id),
+      queryParameters: queryParams,
+    );
+    final json = response.data as Map<String, dynamic>;
+    final dataMap = json['data'] != null && json['data'] is Map<String, dynamic>
+        ? json['data'] as Map<String, dynamic>
+        : json;
+    return ContentDetailsModel.fromJson(dataMap);
+  }
+
+  /// Get Media Asset / Video URL (GET /users/content/video-url)
+  Future<String?> getVideoUrl({
+    required int id,
+    required int contentId,
+    required String contentType,
+  }) async {
+    try {
+      // Map contentType to OpenAPI enum spec ['movie', 'web_series']
+      final resolvedType = (contentType == 'web_series' || contentType == 'series')
+          ? 'web_series'
+          : 'movie';
+
+      final response = await apiClient.get(
+        ApiEndpoints.contentVideoUrl,
+        queryParameters: {
+          'id': id.toString(),
+          'content_id': contentId.toString(),
+          'content_type': resolvedType,
+        },
+      );
+      debugPrint('[MoviesApiService] getVideoUrl response: ${response.data}');
+      final json = response.data as Map<String, dynamic>;
+      if (json.containsKey('data') && json['data'] != null) {
+        final data = json['data'];
+        if (data is String && data.isNotEmpty) return data;
+        if (data is Map<String, dynamic>) {
+          if (data.containsKey('vimeo_data') && data['vimeo_data'] is Map) {
+            final vimeo = data['vimeo_data'] as Map<String, dynamic>;
+            if (vimeo.containsKey('id') && vimeo['id'] != null) {
+              final vimeoId = vimeo['id'].toString();
+              return 'https://player.vimeo.com/video/$vimeoId';
+            }
+          }
+          return data['video_url'] as String? ??
+              data['url'] as String? ??
+              data['stream_url'] as String? ??
+              data['videoUrl'] as String?;
+        }
+      }
+      if (json.containsKey('video_url')) return json['video_url'] as String?;
+      if (json.containsKey('url')) return json['url'] as String?;
+      if (json.containsKey('stream_url')) return json['stream_url'] as String?;
+    } catch (e) {
+      debugPrint('[MoviesApiService] getVideoUrl error: $e');
+    }
+    return null;
+  }
+
+  /// Get Recommended Content (GET /users/content/{id}/recommended)
+  Future<PaginatedContentResponse> getRecommendedContent(int id) async {
+    final response = await apiClient.get(ApiEndpoints.recommendedContent(id));
+    return PaginatedContentResponse.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  /// Search Content (GET /users/search)
+  Future<PaginatedContentResponse> searchContent({
+    required String query,
+    int? limit,
+    String? cursor,
+  }) async {
     final response = await apiClient.get(
       ApiEndpoints.search,
-      queryParameters: queryParams,
+      queryParameters: {
+        'q': query,
+        ...?limit == null ? null : {'limit': limit},
+        ...?cursor == null ? null : {'cursor': cursor},
+      },
     );
-    return SearchResponse.fromJson(response.data as Map<String, dynamic>);
+    return PaginatedContentResponse.fromJson(response.data as Map<String, dynamic>);
   }
 
-  Future<PaginatedMovies> getMovies({
-    int page = 1,
-    int size = 20,
-    String? search,
-    String? genreId,
-    int? year,
-    String sortBy = 'release_date',
-    String sortOrder = 'desc',
-  }) async {
-    final queryParams = <String, dynamic>{
-      'page': page,
-      'size': size,
-      'sort_by': sortBy,
-      'sort_order': sortOrder,
-    };
-    if (search != null) queryParams['search'] = search;
-    if (genreId != null) queryParams['genre_id'] = genreId;
-    if (year != null) queryParams['year'] = year;
-
-    final response = await apiClient.get(
-      ApiEndpoints.movies,
-      queryParameters: queryParams,
-    );
-    return PaginatedMovies.fromJson(response.data as Map<String, dynamic>);
+  /// Get Active Plans (GET /users/plans)
+  Future<List<PlanModel>> getUserPlans() async {
+    final response = await apiClient.get(ApiEndpoints.userPlans);
+    final json = response.data as Map<String, dynamic>;
+    if (json.containsKey('data')) {
+      final data = json['data'];
+      if (data is List) {
+        return data.map((e) => PlanModel.fromJson(e as Map<String, dynamic>)).toList();
+      } else if (data is Map && data.containsKey('plans')) {
+        return (data['plans'] as List)
+            .map((e) => PlanModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+    }
+    return [];
   }
 }

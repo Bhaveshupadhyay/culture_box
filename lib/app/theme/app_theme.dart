@@ -64,6 +64,20 @@ class AppTheme {
           letterSpacing: 1.2,
         ),
       ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppColors.surfaceSecondary,
+        contentTextStyle: const TextStyle(
+          color: Colors.white,
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
+        ),
+        actionTextColor: AppColors.logoGold,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: const BorderSide(color: AppColors.cardBorder),
+        ),
+      ),
       drawerTheme: const DrawerThemeData(
         backgroundColor: AppColors.background,
         width: 320,

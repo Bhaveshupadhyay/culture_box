@@ -1,122 +1,134 @@
-import '../../../../core/models/enums.dart';
+import 'package:flutter/foundation.dart';
 import '../../../../core/models/layout_models.dart';
 import '../../../../core/models/movie_models.dart';
-import '../../../../core/network/api_endpoints.dart';
 import '../api/movies_api_service.dart';
-import '../sources/mock_movies.dart';
 
 class MoviesRepository {
   final MoviesApiService moviesApiService;
 
   MoviesRepository({required this.moviesApiService});
 
+  /// Formats relative video URLs (e.g. 'uploads/...') into full Cloudinary CDN Video URLs
+  static String formatVideoUrl(String? url) {
+    if (url == null || url.trim().isEmpty) return '';
+    final trimmed = url.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    // Append .mp4 if no extension is present so Cloudinary streams a valid MP4 container
+    final hasExtension = trimmed.contains('.');
+    final videoPath = hasExtension ? trimmed : '$trimmed.mp4';
+    return 'https://res.cloudinary.com/dwyflu02w/video/upload/$videoPath';
+  }
+
+  /// Legacy & SDUI homepage layout
   Future<HomepageLayoutResponseModel> getHomepageLayout({String screenName = 'default'}) async {
     try {
-      final layout = await moviesApiService.getHomepageLayout(screenName: screenName);
-      if (layout.sections.isNotEmpty) {
-        return layout;
+      final rows = await moviesApiService.getHomeLayout();
+      if (rows.isNotEmpty) {
+        final sections = rows.map((r) => r.toLayoutSection()).toList();
+        return HomepageLayoutResponseModel(sections: sections);
       }
     } catch (_) {}
 
-    // Fallback SDUI layout if API layout endpoint fails
-    return const HomepageLayoutResponseModel(
-      sections: [
-        LayoutSectionModel(
-          sectionId: 'trending_hero',
-          sectionName: 'Trending Now',
-          widgetType: WidgetType.heroCarousel,
-          scrollType: ScrollType.horizontal,
-          dataEndpoint: '/api/v1/homepage/sections/trending_hero',
-        ),
-        LayoutSectionModel(
-          sectionId: 'new_releases',
-          sectionName: 'Fresh Out of the Box',
-          widgetType: WidgetType.horizontalList,
-          scrollType: ScrollType.horizontal,
-          dataEndpoint: '/api/v1/homepage/sections/new_releases',
-        ),
-        LayoutSectionModel(
-          sectionId: 'top_rated',
-          sectionName: 'All-Time Greats',
-          widgetType: WidgetType.grid,
-          scrollType: ScrollType.vertical,
-          dataEndpoint: '/api/v1/homepage/sections/top_rated',
-        ),
-      ],
-    );
+    return const HomepageLayoutResponseModel(sections: []);
   }
 
+  /// Get row items / section data
   Future<List<Movie>> getSectionData(String endpointOrSectionId) async {
     try {
-      final response = await moviesApiService.getSectionData(endpointOrSectionId);
-      if (response.items.isNotEmpty) {
-        return response.items;
+      final intId = int.tryParse(endpointOrSectionId);
+      if (intId != null) {
+        final response = await moviesApiService.getContentRow(intId);
+        return response.data.map((c) => c.toMovie()).toList();
       }
     } catch (_) {}
 
-    // Robust fallback if backend endpoint returns 500 error or empty items
-    final lowerId = endpointOrSectionId.toLowerCase();
-    if (lowerId.contains('hero') || lowerId.contains('trending')) {
-      return mockMovies.where((m) => m.isOriginal || m.isTrending).toList();
-    } else if (lowerId.contains('new') || lowerId.contains('release') || lowerId.contains('originals')) {
-      return mockMovies.where((m) => m.isOriginal || m.isNowPlaying).toList();
-    } else if (lowerId.contains('top') || lowerId.contains('rated')) {
-      return mockMovies.where((m) => m.isTopRated || m.isPopular).toList();
-    }
-    return mockMovies;
+    return [];
   }
 
+  /// Get movie details
   Future<Movie> getMovieDetails(String movieId) async {
-    try {
-      return await moviesApiService.getMovieDetails(movieId);
-    } catch (_) {
-      final mock = mockMovies.firstWhere(
-        (m) => m.id == movieId,
-        orElse: () => mockMovies.first,
-      );
-      return mock;
+    final intId = int.tryParse(movieId);
+    if (intId != null) {
+      final details = await moviesApiService.getContentDetails(intId);
+      return details.toMovie();
     }
+    throw Exception('Movie not found');
   }
 
+  /// Get video or trailer URL directly from backend API
   Future<String> getMovieVideoUrl(String movieId, {bool isTrailer = false}) async {
-    const String defaultVideoUrl =
-        'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4';
+    const String sampleStreamUrl =
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+
+    final intId = int.tryParse(movieId);
+    if (intId == null) return sampleStreamUrl;
+
     try {
-      final assets = await moviesApiService.getMovieAssets(movieId);
-      if (assets.isNotEmpty) {
-        final targetType = isTrailer ? AssetType.trailer : AssetType.video;
-        final matchingAsset = assets.firstWhere(
-          (a) => a.assetType == targetType,
-          orElse: () => assets.first,
-        );
-        if (matchingAsset.url.isNotEmpty) {
-          String url = matchingAsset.url;
-          if (!url.startsWith('http')) {
-            url = '${ApiEndpoints.baseUrl}$url';
+      final url = await moviesApiService.getVideoUrl(
+        id: intId,
+        contentId: intId,
+        contentType: isTrailer ? 'trailer' : 'movie',
+      );
+      debugPrint('[MoviesRepository] getMovieVideoUrl parsed raw url: $url (isTrailer: $isTrailer)');
+      if (url != null && url.isNotEmpty) {
+        final formatted = formatVideoUrl(url);
+        if (formatted.isNotEmpty) return formatted;
+      }
+    } catch (e) {
+      debugPrint('[MoviesRepository] getMovieVideoUrl error: $e');
+    }
+
+    return sampleStreamUrl;
+  }
+
+  /// Search movies
+  Future<List<Movie>> searchMovies({String? q, String? genre}) async {
+    try {
+      final query = q ?? (genre != null && genre != 'All' ? genre : '');
+      if (query.isNotEmpty) {
+        final response = await moviesApiService.searchContent(query: query);
+        if (response.data.isNotEmpty) {
+          var movies = response.data.map((c) => c.toMovie()).toList();
+          if (genre != null && genre.isNotEmpty && genre != 'All') {
+            movies = movies.where((m) => m.genres.contains(genre)).toList();
           }
-          return url;
+          return movies;
         }
       }
     } catch (_) {}
-
-    return defaultVideoUrl;
+    return [];
   }
 
-  Future<List<Movie>> searchMovies({String? q, String? genre}) async {
+  /// Recommended Content (GET /users/content/{id}/recommended)
+  Future<List<Movie>> getRecommendedContent(int id) async {
     try {
-      final response = await moviesApiService.searchMovies(q: q, genre: genre);
-      if (response.items.isNotEmpty) {
-        return response.items;
-      }
-    } catch (_) {}
+      final response = await moviesApiService.getRecommendedContent(id);
+      return response.data.map((c) => c.toMovie()).toList();
+    } catch (_) {
+      return [];
+    }
+  }
 
-    final query = q?.toLowerCase().trim() ?? '';
-    return mockMovies.where((movie) {
-      final matchesQuery = query.isEmpty ||
-          movie.title.toLowerCase().contains(query) ||
-          movie.description.toLowerCase().contains(query);
-      final matchesGenre = genre == null || genre == 'All' || movie.genres.contains(genre);
-      return matchesQuery && matchesGenre;
-    }).toList();
+  /// Get Home Sliders (GET /users/home/sliders)
+  Future<List<HomeSliderModel>> getHomeSliders() async {
+    try {
+      return await moviesApiService.getHomeSliders();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Get User Plans
+  Future<List<PlanModel>> getUserPlans() async {
+    try {
+      return await moviesApiService.getUserPlans();
+    } catch (_) {
+      return const [
+        PlanModel(id: 1, planName: 'basic', monthlyPrice: '6.99', maxScreens: 3),
+        PlanModel(id: 2, planName: 'premium', monthlyPrice: '69.99', maxScreens: 8),
+      ];
+    }
   }
 }

@@ -253,7 +253,7 @@ class AppTextStyles {
   );
 
   static TextStyle drawerTileHighlight = GoogleFonts.inter(
-    color: Colors.black,
+    color: AppColors.logoGold,
     fontSize: 15,
     fontWeight: FontWeight.w800,
   );

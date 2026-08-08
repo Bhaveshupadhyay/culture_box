@@ -1,327 +1,107 @@
 import 'package:equatable/equatable.dart';
 import 'enums.dart';
 
-class GenreModel extends Equatable {
-  final String id;
-  final String name;
-
-  const GenreModel({
-    required this.id,
-    required this.name,
-  });
-
-  factory GenreModel.fromJson(Map<String, dynamic> json) {
-    return GenreModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-    };
-  }
-
-  @override
-  List<Object?> get props => [id, name];
-}
-
-class PersonModel extends Equatable {
-  final String id;
-  final String name;
-  final String? profilePath;
-  final String? biography;
-
-  const PersonModel({
-    required this.id,
-    required this.name,
-    this.profilePath,
-    this.biography,
-  });
-
-  factory PersonModel.fromJson(Map<String, dynamic> json) {
-    return PersonModel(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      profilePath: json['profile_path'] as String?,
-      biography: json['biography'] as String?,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'profile_path': profilePath,
-      'biography': biography,
-    };
-  }
-
-  @override
-  List<Object?> get props => [id, name, profilePath, biography];
-}
-
-class MovieCastModel extends Equatable {
-  final String personId;
-  final String character;
-  final int order;
-  final PersonModel person;
-
-  const MovieCastModel({
-    required this.personId,
-    required this.character,
-    this.order = 0,
-    required this.person,
-  });
-
-  factory MovieCastModel.fromJson(Map<String, dynamic> json) {
-    return MovieCastModel(
-      personId: json['person_id'] as String,
-      character: json['character'] as String,
-      order: json['order'] as int? ?? 0,
-      person: PersonModel.fromJson(json['person'] as Map<String, dynamic>),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'person_id': personId,
-      'character': character,
-      'order': order,
-      'person': person.toJson(),
-    };
-  }
-
-  @override
-  List<Object?> get props => [personId, character, order, person];
-}
-
-class MovieCrewModel extends Equatable {
-  final String personId;
-  final String job;
-  final String department;
-  final PersonModel person;
-
-  const MovieCrewModel({
-    required this.personId,
-    required this.job,
-    required this.department,
-    required this.person,
-  });
-
-  factory MovieCrewModel.fromJson(Map<String, dynamic> json) {
-    return MovieCrewModel(
-      personId: json['person_id'] as String,
-      job: json['job'] as String,
-      department: json['department'] as String,
-      person: PersonModel.fromJson(json['person'] as Map<String, dynamic>),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'person_id': personId,
-      'job': job,
-      'department': department,
-      'person': person.toJson(),
-    };
-  }
-
-  @override
-  List<Object?> get props => [personId, job, department, person];
-}
-
-class MediaAssetModel extends Equatable {
-  final String id;
-  final AssetType assetType;
-  final String? title;
-  final String? language;
-  final bool isPrimary;
-  final String filePath;
-  final String url;
-  final DateTime createdAt;
-
-  const MediaAssetModel({
-    required this.id,
-    required this.assetType,
-    this.title,
-    this.language,
-    this.isPrimary = false,
-    required this.filePath,
-    required this.url,
-    required this.createdAt,
-  });
-
-  factory MediaAssetModel.fromJson(Map<String, dynamic> json) {
-    return MediaAssetModel(
-      id: json['id'] as String,
-      assetType: AssetTypeExtension.fromString(json['asset_type'] as String?),
-      title: json['title'] as String?,
-      language: json['language'] as String?,
-      isPrimary: json['is_primary'] as bool? ?? false,
-      filePath: json['file_path'] as String? ?? '',
-      url: json['url'] as String? ?? '',
-      createdAt: json['created_at'] != null
-          ? DateTime.parse(json['created_at'] as String)
-          : DateTime.now(),
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'asset_type': assetType.toRawValue(),
-      'title': title,
-      'language': language,
-      'is_primary': isPrimary,
-      'file_path': filePath,
-      'url': url,
-      'created_at': createdAt.toIso8601String(),
-    };
-  }
-
-  @override
-  List<Object?> get props => [
-        id,
-        assetType,
-        title,
-        language,
-        isPrimary,
-        filePath,
-        url,
-        createdAt
-      ];
-}
-
-/// Unified Movie model from OpenAPI (supports both Movie and MovieSummary)
 class Movie extends Equatable {
   final String id;
   final String title;
-  final String? originalTitle;
-  final String? overview;
-  final String? releaseDate;
-  final int? durationMinutes;
+  final String description;
   final String? posterPath;
   final String? backdropPath;
-  final double rating;
-  final AgeRating ageRating;
-  final bool isActive;
-  final List<GenreModel> genresList;
-  final List<MovieCastModel> castList;
-  final List<MovieCrewModel> crewList;
-  final List<MediaAssetModel> mediaAssets;
-
-  // Custom mock/UI compatibility fields
-  final String? _customDescription;
-  final String? _customPosterUrl;
-  final String? _customBackdropUrl;
-  final int? _customYear;
-  final String? _customDuration;
-  final String? _customCertification;
-  final String? _customLanguage;
-  final List<String>? _customGenres;
-  final List<String>? _customCast;
-  final List<String>? _customCountries;
-  final bool? _isOriginalFlag;
-  final bool? _isPopularFlag;
-  final bool? _isTopRatedFlag;
-  final bool? _isNowPlayingFlag;
-  final bool? _isTrendingFlag;
+  final String? thumbnailUrl;
+  final String? backdropUrl;
+  final String? posterUrl;
+  final double voteAverage;
+  final int voteCount;
+  final int? year;
+  final DateTime? releaseDate;
+  final String? duration;
+  final String? certification;
+  final String? language;
+  final List<String> genres;
+  final List<dynamic> cast;
+  final List<String> countries;
+  final String contentType;
+  final String? rating;
+  final int? sortOrder;
+  final bool isOriginal;
+  final bool isTrending;
+  final bool isPopular;
+  final bool isTopRated;
+  final bool isNowPlaying;
 
   const Movie({
     required this.id,
     required this.title,
-    this.originalTitle,
-    this.overview,
-    this.releaseDate,
-    this.durationMinutes,
+    required this.description,
     this.posterPath,
     this.backdropPath,
-    this.rating = 0.0,
-    this.ageRating = AgeRating.unrated,
-    this.isActive = true,
-    this.genresList = const [],
-    this.castList = const [],
-    this.crewList = const [],
-    this.mediaAssets = const [],
-    String? description,
-    String? posterUrl,
-    String? backdropUrl,
-    int? year,
-    String? duration,
-    String? certification,
-    String? language,
-    List<String>? genres,
-    List<String>? cast,
-    List<String>? countries,
-    bool? isOriginal,
-    bool? isPopular,
-    bool? isTopRated,
-    bool? isNowPlaying,
-    bool? isTrending,
-  })  : _customDescription = description,
-        _customPosterUrl = posterUrl,
-        _customBackdropUrl = backdropUrl,
-        _customYear = year,
-        _customDuration = duration,
-        _customCertification = certification,
-        _customLanguage = language,
-        _customGenres = genres,
-        _customCast = cast,
-        _customCountries = countries,
-        _isOriginalFlag = isOriginal,
-        _isPopularFlag = isPopular,
-        _isTopRatedFlag = isTopRated,
-        _isNowPlayingFlag = isNowPlaying,
-        _isTrendingFlag = isTrending;
+    this.thumbnailUrl,
+    this.backdropUrl,
+    this.posterUrl,
+    this.voteAverage = 0.0,
+    this.voteCount = 0,
+    this.year,
+    this.releaseDate,
+    this.duration,
+    this.certification,
+    this.language,
+    this.genres = const [],
+    this.cast = const [],
+    this.countries = const [],
+    this.contentType = 'movie',
+    this.rating,
+    this.sortOrder,
+    this.isOriginal = false,
+    this.isTrending = false,
+    this.isPopular = false,
+    this.isTopRated = false,
+    this.isNowPlaying = false,
+  });
 
   factory Movie.fromJson(Map<String, dynamic> json) {
-    List<GenreModel> genres = [];
-    if (json['genres'] != null && json['genres'] is List) {
-      genres = (json['genres'] as List)
-          .map((e) => GenreModel.fromJson(e as Map<String, dynamic>))
-          .toList();
-    }
+    final String idStr = json['id']?.toString() ?? '';
+    final String ratingStr = json['rating']?.toString() ?? json['vote_average']?.toString() ?? '5.0';
+    final double ratingVal = (json['vote_average'] as num?)?.toDouble() ?? double.tryParse(ratingStr) ?? 0.0;
 
-    List<MovieCastModel> cast = [];
-    if (json['cast'] != null && json['cast'] is List) {
-      cast = (json['cast'] as List)
-          .map((e) => MovieCastModel.fromJson(e as Map<String, dynamic>))
-          .toList();
-    }
-
-    List<MovieCrewModel> crew = [];
-    if (json['crew'] != null && json['crew'] is List) {
-      crew = (json['crew'] as List)
-          .map((e) => MovieCrewModel.fromJson(e as Map<String, dynamic>))
-          .toList();
-    }
-
-    List<MediaAssetModel> assets = [];
-    if (json['media_assets'] != null && json['media_assets'] is List) {
-      assets = (json['media_assets'] as List)
-          .map((e) => MediaAssetModel.fromJson(e as Map<String, dynamic>))
-          .toList();
+    DateTime? parsedDate;
+    int? parsedYear = json['year'] as int?;
+    if (json['release_date'] != null) {
+      if (json['release_date'] is int) {
+        parsedYear ??= json['release_date'] as int;
+        parsedDate = DateTime(json['release_date'] as int);
+      } else if (json['release_date'] is String) {
+        parsedDate = DateTime.tryParse(json['release_date'] as String);
+        if (parsedDate != null) parsedYear ??= parsedDate.year;
+      }
     }
 
     return Movie(
-      id: json['id'] as String,
-      title: json['title'] as String? ?? 'Untitled',
-      originalTitle: json['original_title'] as String?,
-      overview: json['overview'] as String?,
-      releaseDate: json['release_date'] as String?,
-      durationMinutes: json['duration_minutes'] as int?,
+      id: idStr,
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String? ?? '',
       posterPath: json['poster_path'] as String?,
       backdropPath: json['backdrop_path'] as String?,
-      rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
-      ageRating: AgeRatingExtension.fromString(json['age_rating'] as String?),
-      isActive: json['is_active'] as bool? ?? true,
-      genresList: genres,
-      castList: cast,
-      crewList: crew,
-      mediaAssets: assets,
+      thumbnailUrl: json['thumbnail_url'] as String?,
+      backdropUrl: json['backdrop_url'] as String?,
+      posterUrl: json['posterUrl'] as String? ?? json['poster_url'] as String?,
+      voteAverage: ratingVal,
+      voteCount: json['vote_count'] as int? ?? 0,
+      year: parsedYear,
+      releaseDate: parsedDate,
+      duration: json['duration'] as String?,
+      certification: json['certification'] as String?,
+      language: json['language'] as String?,
+      genres: (json['genres'] as List? ?? []).map((e) => e.toString()).toList(),
+      cast: json['cast'] as List? ?? [],
+      countries: (json['countries'] as List? ?? []).map((e) => e.toString()).toList(),
+      contentType: json['content_type'] as String? ?? 'movie',
+      rating: ratingStr,
+      sortOrder: json['sort_order'] as int?,
+      isOriginal: json['is_original'] as bool? ?? false,
+      isTrending: json['is_trending'] as bool? ?? false,
+      isPopular: json['is_popular'] as bool? ?? false,
+      isTopRated: json['is_top_rated'] as bool? ?? false,
+      isNowPlaying: json['is_now_playing'] as bool? ?? false,
     );
   }
 
@@ -329,185 +109,371 @@ class Movie extends Equatable {
     return {
       'id': id,
       'title': title,
-      'original_title': originalTitle,
-      'overview': overview,
-      'release_date': releaseDate,
-      'duration_minutes': durationMinutes,
+      'description': description,
       'poster_path': posterPath,
       'backdrop_path': backdropPath,
+      'thumbnail_url': thumbnailUrl,
+      'backdrop_url': backdropUrl,
+      'poster_url': posterUrl,
+      'vote_average': voteAverage,
+      'vote_count': voteCount,
+      'year': year,
+      'release_date': releaseDate?.toIso8601String(),
+      'duration': duration,
+      'certification': certification,
+      'language': language,
+      'genres': genres,
+      'cast': cast,
+      'countries': countries,
+      'content_type': contentType,
       'rating': rating,
-      'age_rating': ageRating.displayName,
-      'is_active': isActive,
-      'genres': genresList.map((e) => e.toJson()).toList(),
-      'cast': castList.map((e) => e.toJson()).toList(),
-      'crew': crewList.map((e) => e.toJson()).toList(),
-      'media_assets': mediaAssets.map((e) => e.toJson()).toList(),
+      'sort_order': sortOrder,
     };
   }
 
-  // Frontend compatibility getters for existing UI widgets
-  String get description => _customDescription ?? overview ?? 'No description available.';
-  String get posterUrl => _customPosterUrl ??
-      ((posterPath != null && posterPath!.isNotEmpty)
-          ? posterPath!
-          : 'https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=500');
-  String get backdropUrl => _customBackdropUrl ??
-      ((backdropPath != null && backdropPath!.isNotEmpty)
-          ? backdropPath!
-          : posterUrl);
-
-  int get year {
-    if (_customYear != null) return _customYear;
-    if (releaseDate != null && releaseDate!.length >= 4) {
-      final parsedYear = int.tryParse(releaseDate!.substring(0, 4));
-      if (parsedYear != null) return parsedYear;
-    }
-    return 2026;
-  }
-
-  String get duration =>
-      _customDuration ?? (durationMinutes != null ? '$durationMinutes mins' : '120 mins');
-  String get certification => _customCertification ?? ageRating.displayName;
-  String get language => _customLanguage ??
-      (mediaAssets.isNotEmpty ? (mediaAssets.first.language ?? 'English') : 'English');
-  List<String> get genres =>
-      _customGenres ?? (genresList.isNotEmpty ? genresList.map((g) => g.name).toList() : const []);
-  List<String> get cast => _customCast ??
-      (castList.isNotEmpty
-          ? castList.map((c) => '${c.person.name} (${c.character})').toList()
-          : const []);
-  List<String> get countries => _customCountries ?? const ['USA'];
-
-  bool get isOriginal =>
-      _isOriginalFlag ??
-      genresList.any((g) => g.name.toLowerCase().contains('original')) ||
-      rating >= 8.5;
-  bool get isPopular => _isPopularFlag ?? rating >= 7.5;
-  bool get isTopRated => _isTopRatedFlag ?? rating >= 8.0;
-  bool get isNowPlaying => _isNowPlayingFlag ?? isActive;
-  bool get isTrending => _isTrendingFlag ?? rating >= 8.2;
+  String get effectivePoster => posterUrl ?? thumbnailUrl ?? posterPath ?? backdropUrl ?? backdropPath ?? '';
+  String get effectiveBackdrop => backdropUrl ?? backdropPath ?? thumbnailUrl ?? posterPath ?? posterUrl ?? '';
 
   @override
   List<Object?> get props => [
         id,
         title,
-        originalTitle,
-        overview,
-        releaseDate,
-        durationMinutes,
+        description,
         posterPath,
         backdropPath,
+        thumbnailUrl,
+        backdropUrl,
+        posterUrl,
+        voteAverage,
+        voteCount,
+        year,
+        releaseDate,
+        duration,
+        certification,
+        language,
+        genres,
+        cast,
+        countries,
+        contentType,
         rating,
-        ageRating,
-        isActive,
-        genresList,
-        castList,
-        crewList,
-        mediaAssets,
-        _customDescription,
-        _customPosterUrl,
-        _customBackdropUrl,
-        _customYear,
-        _customDuration,
-        _customCertification,
-        _customLanguage,
-        _customGenres,
-        _customCast,
-        _customCountries,
-        _isOriginalFlag,
-        _isPopularFlag,
-        _isTopRatedFlag,
-        _isNowPlayingFlag,
-        _isTrendingFlag,
+        sortOrder,
       ];
 }
 
-class SectionDataResponse extends Equatable {
-  final String sectionId;
-  final List<Movie> items;
-  final int page;
-  final int size;
-  final bool hasNext;
+class ContentItemModel extends Equatable {
+  final int id;
+  final String title;
+  final String? description;
+  final String? thumbnailUrl;
+  final String? backdropUrl;
+  final String contentType;
+  final String? rating;
+  final int? sortOrder;
+  final int? releaseDate;
 
-  const SectionDataResponse({
-    required this.sectionId,
-    required this.items,
-    required this.page,
-    required this.size,
-    this.hasNext = false,
+  const ContentItemModel({
+    required this.id,
+    required this.title,
+    this.description,
+    this.thumbnailUrl,
+    this.backdropUrl,
+    required this.contentType,
+    this.rating,
+    this.sortOrder,
+    this.releaseDate,
   });
 
-  factory SectionDataResponse.fromJson(Map<String, dynamic> json) {
-    final list = (json['items'] as List? ?? [])
-        .map((e) => Movie.fromJson(e as Map<String, dynamic>))
-        .toList();
-    return SectionDataResponse(
-      sectionId: json['section_id'] as String,
-      items: list,
-      page: json['page'] as int? ?? 1,
-      size: json['size'] as int? ?? 10,
-      hasNext: json['has_next'] as bool? ?? false,
+  factory ContentItemModel.fromJson(Map<String, dynamic> json) {
+    return ContentItemModel(
+      id: json['id'] as int? ?? 0,
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String?,
+      thumbnailUrl: json['thumbnail_url'] as String?,
+      backdropUrl: json['backdrop_url'] as String?,
+      contentType: json['content_type'] as String? ?? 'movie',
+      rating: json['rating'] as String?,
+      sortOrder: json['sort_order'] as int?,
+      releaseDate: json['release_date'] as int?,
     );
   }
 
+  Movie toMovie() {
+    return Movie(
+      id: id.toString(),
+      title: title,
+      description: description ?? '',
+      thumbnailUrl: thumbnailUrl,
+      backdropUrl: backdropUrl,
+      contentType: contentType,
+      rating: rating,
+      voteAverage: double.tryParse(rating ?? '5.0') ?? 5.0,
+      year: releaseDate,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'thumbnail_url': thumbnailUrl,
+      'backdrop_url': backdropUrl,
+      'content_type': contentType,
+      'rating': rating,
+      'sort_order': sortOrder,
+      'release_date': releaseDate,
+    };
+  }
+
   @override
-  List<Object?> get props => [sectionId, items, page, size, hasNext];
+  List<Object?> get props => [
+        id,
+        title,
+        description,
+        thumbnailUrl,
+        backdropUrl,
+        contentType,
+        rating,
+        sortOrder,
+        releaseDate,
+      ];
+}
+
+class ContentDetailsModel extends Equatable {
+  final int id;
+  final String title;
+  final String description;
+  final String? backdropUrl;
+  final String contentType;
+  final String? rating;
+  final int? releaseDate;
+  final List<dynamic> seasons;
+  final List<dynamic> episodes;
+  final List<dynamic> categories;
+
+  const ContentDetailsModel({
+    required this.id,
+    required this.title,
+    required this.description,
+    this.backdropUrl,
+    required this.contentType,
+    this.rating,
+    this.releaseDate,
+    this.seasons = const [],
+    this.episodes = const [],
+    this.categories = const [],
+  });
+
+  factory ContentDetailsModel.fromJson(Map<String, dynamic> json) {
+    return ContentDetailsModel(
+      id: json['id'] as int? ?? 0,
+      title: json['title'] as String? ?? '',
+      description: json['description'] as String? ?? '',
+      backdropUrl: json['backdrop_url'] as String?,
+      contentType: json['content_type'] as String? ?? 'movie',
+      rating: json['rating'] as String?,
+      releaseDate: json['release_date'] as int?,
+      seasons: json['seasons'] as List? ?? [],
+      episodes: json['episodes'] as List? ?? [],
+      categories: json['categories'] as List? ?? [],
+    );
+  }
+
+  Movie toMovie() {
+    return Movie(
+      id: id.toString(),
+      title: title,
+      description: description,
+      backdropUrl: backdropUrl,
+      contentType: contentType,
+      rating: rating,
+      voteAverage: double.tryParse(rating ?? '5.0') ?? 5.0,
+      year: releaseDate,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'description': description,
+      'backdrop_url': backdropUrl,
+      'content_type': contentType,
+      'rating': rating,
+      'release_date': releaseDate,
+      'seasons': seasons,
+      'episodes': episodes,
+      'categories': categories,
+    };
+  }
+
+  @override
+  List<Object?> get props => [
+        id,
+        title,
+        description,
+        backdropUrl,
+        contentType,
+        rating,
+        releaseDate,
+        seasons,
+        episodes,
+        categories,
+      ];
+}
+
+class MediaAssetModel extends Equatable {
+  final String id;
+  final String url;
+  final AssetType assetType;
+
+  const MediaAssetModel({
+    required this.id,
+    required this.url,
+    required this.assetType,
+  });
+
+  factory MediaAssetModel.fromJson(Map<String, dynamic> json) {
+    return MediaAssetModel(
+      id: json['id']?.toString() ?? '',
+      url: json['url'] as String? ?? '',
+      assetType: AssetTypeExtension.fromString(json['asset_type'] as String?),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'url': url,
+      'asset_type': assetType.name,
+    };
+  }
+
+  @override
+  List<Object?> get props => [id, url, assetType];
+}
+
+class SectionDataResponse extends Equatable {
+  final List<Movie> items;
+
+  const SectionDataResponse({required this.items});
+
+  factory SectionDataResponse.fromJson(Map<String, dynamic> json) {
+    final list = (json['items'] as List? ?? json['data'] as List? ?? [])
+        .map((e) => Movie.fromJson(e as Map<String, dynamic>))
+        .toList();
+    return SectionDataResponse(items: list);
+  }
+
+  @override
+  List<Object?> get props => [items];
+}
+
+class SearchResponse extends Equatable {
+  final List<Movie> items;
+
+  const SearchResponse({required this.items});
+
+  factory SearchResponse.fromJson(Map<String, dynamic> json) {
+    final list = (json['items'] as List? ?? json['data'] as List? ?? [])
+        .map((e) => Movie.fromJson(e as Map<String, dynamic>))
+        .toList();
+    return SearchResponse(items: list);
+  }
+
+  @override
+  List<Object?> get props => [items];
 }
 
 class PaginatedMovies extends Equatable {
   final List<Movie> items;
   final int page;
-  final int size;
-  final bool hasNext;
+  final int totalPages;
+  final int totalResults;
 
   const PaginatedMovies({
     required this.items,
-    required this.page,
-    required this.size,
-    this.hasNext = false,
+    this.page = 1,
+    this.totalPages = 1,
+    this.totalResults = 0,
   });
 
   factory PaginatedMovies.fromJson(Map<String, dynamic> json) {
-    final list = (json['items'] as List? ?? [])
+    final list = (json['items'] as List? ?? json['data'] as List? ?? [])
         .map((e) => Movie.fromJson(e as Map<String, dynamic>))
         .toList();
     return PaginatedMovies(
       items: list,
       page: json['page'] as int? ?? 1,
-      size: json['size'] as int? ?? 20,
-      hasNext: json['has_next'] as bool? ?? false,
+      totalPages: json['total_pages'] as int? ?? 1,
+      totalResults: json['total_results'] as int? ?? list.length,
     );
   }
 
   @override
-  List<Object?> get props => [items, page, size, hasNext];
+  List<Object?> get props => [items, page, totalPages, totalResults];
 }
 
-class SearchResponse extends Equatable {
-  final List<Movie> items;
-  final int page;
-  final int size;
-  final bool hasNext;
+class PaginatedContentResponse extends Equatable {
+  final bool isSuccess;
+  final List<ContentItemModel> data;
+  final String? nextCursor;
+  final bool hasMore;
 
-  const SearchResponse({
-    required this.items,
-    required this.page,
-    required this.size,
-    this.hasNext = false,
+  const PaginatedContentResponse({
+    required this.isSuccess,
+    required this.data,
+    this.nextCursor,
+    required this.hasMore,
   });
 
-  factory SearchResponse.fromJson(Map<String, dynamic> json) {
-    final list = (json['items'] as List? ?? [])
-        .map((e) => Movie.fromJson(e as Map<String, dynamic>))
+  factory PaginatedContentResponse.fromJson(Map<String, dynamic> json) {
+    final list = (json['data'] as List? ?? [])
+        .map((e) => ContentItemModel.fromJson(e as Map<String, dynamic>))
         .toList();
-    return SearchResponse(
-      items: list,
-      page: json['page'] as int? ?? 1,
-      size: json['size'] as int? ?? 20,
-      hasNext: json['has_next'] as bool? ?? false,
+    return PaginatedContentResponse(
+      isSuccess: json['isSuccess'] as bool? ?? true,
+      data: list,
+      nextCursor: json['nextCursor'] as String?,
+      hasMore: json['hasMore'] as bool? ?? false,
     );
   }
 
   @override
-  List<Object?> get props => [items, page, size, hasNext];
+  List<Object?> get props => [isSuccess, data, nextCursor, hasMore];
+}
+
+class PlanModel extends Equatable {
+  final int id;
+  final String planName;
+  final String monthlyPrice;
+  final int maxScreens;
+
+  const PlanModel({
+    required this.id,
+    required this.planName,
+    required this.monthlyPrice,
+    required this.maxScreens,
+  });
+
+  factory PlanModel.fromJson(Map<String, dynamic> json) {
+    return PlanModel(
+      id: json['id'] as int? ?? 0,
+      planName: json['plan_name'] as String? ?? '',
+      monthlyPrice: json['monthly_price'] as String? ?? '0.0',
+      maxScreens: json['max_screens'] as int? ?? 1,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'plan_name': planName,
+      'monthly_price': monthlyPrice,
+      'max_screens': maxScreens,
+    };
+  }
+
+  @override
+  List<Object?> get props => [id, planName, monthlyPrice, maxScreens];
 }

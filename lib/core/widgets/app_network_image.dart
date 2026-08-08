@@ -19,14 +19,27 @@ class AppNetworkImage extends StatelessWidget {
     this.errorWidget,
   });
 
+  /// Formats relative image URLs (e.g., 'uploads/...') into full Cloudinary CDN URLs
+  static String formatImageUrl(String? url) {
+    if (url == null || url.trim().isEmpty) return '';
+    final trimmed = url.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    // Prepend Cloudinary CDN base path as per cbn_doc.md spec
+    return 'https://res.cloudinary.com/dwyflu02w/image/upload/c_fill,g_auto,w_1280,h_720,q_auto,f_auto/$trimmed';
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (imageUrl.isEmpty) {
+    final String formattedUrl = formatImageUrl(imageUrl);
+
+    if (formattedUrl.isEmpty) {
       return _buildErrorWidget(context);
     }
 
     return CachedNetworkImage(
-      imageUrl: imageUrl,
+      imageUrl: formattedUrl,
       width: width,
       height: height,
       fit: fit,
