@@ -121,9 +121,14 @@ jobs:
       - name: Send Telegram Notification
         if: always()
         env:
-          TELEGRAM_BOT_TOKEN: "8856831390:AAGJh7M6MN69CPbtx42t9ngrUUHUqPQlWzY"
-          TELEGRAM_CHAT_ID: "@Git_project_notifications_bot"
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
+          if [ -z "$TELEGRAM_BOT_TOKEN" ] || [ -z "$TELEGRAM_CHAT_ID" ]; then
+            echo "Telegram secrets (TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID) not configured in Repository Secrets. Skipping notification."
+            exit 0
+          fi
+
           JOB_STATUS="${{ job.status }}"
           WORKFLOW_NAME="${{ github.workflow }}"
           RUN_NUMBER="${{ github.run_number }}"
