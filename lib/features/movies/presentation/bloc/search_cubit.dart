@@ -40,17 +40,21 @@ class SearchCubit extends Cubit<SearchState> {
   SearchCubit(this.repository) : super(SearchInitial());
 
   Future<void> performSearch({String? query, String? genre}) async {
+    if (isClosed) return;
     emit(SearchLoading());
     try {
       final results = await repository.searchMovies(q: query, genre: genre);
+      if (isClosed) return;
       if (results.isEmpty) {
         emit(SearchEmpty());
       } else {
         emit(SearchLoaded(results));
       }
     } on AppException catch (e) {
+      if (isClosed) return;
       emit(SearchError(e.message));
     } catch (e) {
+      if (isClosed) return;
       emit(const SearchError('Search request failed.'));
     }
   }

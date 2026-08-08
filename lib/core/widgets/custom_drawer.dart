@@ -17,6 +17,38 @@ import 'culturebox_logo.dart';
 class CustomDrawer extends StatelessWidget {
   const CustomDrawer({super.key});
 
+  void _confirmSignOut(BuildContext context, AuthBloc authBloc) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text('Sign Out', style: AppTextStyles.detailsTitle),
+        content: Text(
+          'Are you sure you want to sign out of your account?',
+          style: AppTextStyles.bodySecondary,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.logoRedOrange,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.pop(dialogContext); // Close dialog
+              Navigator.pop(context);       // Close drawer
+              authBloc.add(AuthLogoutRequested());
+            },
+            child: const Text('SIGN OUT'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authBloc = ServiceLocator.instance.authBloc;
@@ -94,79 +126,84 @@ class CustomDrawer extends StatelessWidget {
                   );
                 },
               ),
-              _buildDrawerTile(
-                context,
-                icon: Icons.card_membership,
-                title: 'Start Subscription',
-                isHighlight: true,
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ChoosePlanPage()),
-                  );
-                },
-              ),
-              _buildDrawerTile(
-                context,
-                icon: Icons.devices,
-                title: 'Connected Devices',
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const DevicesPage()),
-                  );
-                },
-              ),
-              _buildDrawerTile(
-                context,
-                icon: Icons.person,
-                title: 'Profile',
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ProfilePage()),
-                  );
-                },
-              ),
-              _buildDrawerTile(
-                context,
-                icon: Icons.settings,
-                title: 'Settings',
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const SettingsPage()),
-                  );
-                },
-              ),
               BlocBuilder<AuthBloc, AuthState>(
                 builder: (context, state) {
-                  if (state is Authenticated) {
-                    return _buildDrawerTile(
-                      context,
-                      icon: Icons.logout,
-                      title: 'Sign Out (${state.user.email})',
-                      onTap: () {
-                        Navigator.pop(context);
-                        authBloc.add(AuthLogoutRequested());
-                      },
-                    );
-                  }
-                  return _buildDrawerTile(
-                    context,
-                    icon: Icons.login,
-                    title: 'Sign In / Register',
-                    onTap: () {
-                      Navigator.pop(context);
-                      Navigator.push(
+                  final isSubscribed = state is Authenticated && state.user.isSubscribed == 1;
+
+                  return Column(
+                    children: [
+                      // Only show 'Start Subscription' if user is not currently subscribed
+                      if (!isSubscribed)
+                        _buildDrawerTile(
+                          context,
+                          icon: Icons.card_membership,
+                          title: 'Start Subscription',
+                          isHighlight: true,
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ChoosePlanPage()),
+                            );
+                          },
+                        ),
+                      _buildDrawerTile(
                         context,
-                        MaterialPageRoute(builder: (context) => const LoginPage()),
-                      );
-                    },
+                        icon: Icons.devices,
+                        title: 'Connected Devices',
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const DevicesPage()),
+                          );
+                        },
+                      ),
+                      _buildDrawerTile(
+                        context,
+                        icon: Icons.person,
+                        title: 'Profile',
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const ProfilePage()),
+                          );
+                        },
+                      ),
+                      _buildDrawerTile(
+                        context,
+                        icon: Icons.settings,
+                        title: 'Settings',
+                        onTap: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => const SettingsPage()),
+                          );
+                        },
+                      ),
+                      if (state is Authenticated)
+                        _buildDrawerTile(
+                          context,
+                          icon: Icons.logout,
+                          title: 'Sign Out',
+                          onTap: () => _confirmSignOut(context, authBloc),
+                        )
+                      else
+                        _buildDrawerTile(
+                          context,
+                          icon: Icons.login,
+                          title: 'Sign In / Register',
+                          onTap: () {
+                            Navigator.pop(context);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const LoginPage()),
+                            );
+                          },
+                        ),
+                    ],
                   );
                 },
               ),

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../../../core/models/layout_models.dart';
 import '../../../../core/models/movie_models.dart';
 import '../../../../core/network/api_client.dart';
@@ -74,28 +75,45 @@ class MoviesApiService {
     required int contentId,
     required String contentType,
   }) async {
-    final response = await apiClient.get(
-      ApiEndpoints.contentVideoUrl,
-      queryParameters: {
-        'id': id,
-        'content_id': contentId,
-        'content_type': contentType,
-      },
-    );
-    final json = response.data as Map<String, dynamic>;
-    if (json.containsKey('data')) {
-      final data = json['data'];
-      if (data is String && data.isNotEmpty) return data;
-      if (data is Map<String, dynamic>) {
-        return data['video_url'] as String? ??
-            data['url'] as String? ??
-            data['stream_url'] as String? ??
-            data['videoUrl'] as String?;
+    try {
+      // Map contentType to OpenAPI enum spec ['movie', 'web_series']
+      final resolvedType = (contentType == 'web_series' || contentType == 'series')
+          ? 'web_series'
+          : 'movie';
+
+      final response = await apiClient.get(
+        ApiEndpoints.contentVideoUrl,
+        queryParameters: {
+          'id': id.toString(),
+          'content_id': contentId.toString(),
+          'content_type': resolvedType,
+        },
+      );
+      debugPrint('[MoviesApiService] getVideoUrl response: ${response.data}');
+      final json = response.data as Map<String, dynamic>;
+      if (json.containsKey('data') && json['data'] != null) {
+        final data = json['data'];
+        if (data is String && data.isNotEmpty) return data;
+        if (data is Map<String, dynamic>) {
+          if (data.containsKey('vimeo_data') && data['vimeo_data'] is Map) {
+            final vimeo = data['vimeo_data'] as Map<String, dynamic>;
+            if (vimeo.containsKey('id') && vimeo['id'] != null) {
+              final vimeoId = vimeo['id'].toString();
+              return 'https://player.vimeo.com/video/$vimeoId';
+            }
+          }
+          return data['video_url'] as String? ??
+              data['url'] as String? ??
+              data['stream_url'] as String? ??
+              data['videoUrl'] as String?;
+        }
       }
+      if (json.containsKey('video_url')) return json['video_url'] as String?;
+      if (json.containsKey('url')) return json['url'] as String?;
+      if (json.containsKey('stream_url')) return json['stream_url'] as String?;
+    } catch (e) {
+      debugPrint('[MoviesApiService] getVideoUrl error: $e');
     }
-    if (json.containsKey('video_url')) return json['video_url'] as String?;
-    if (json.containsKey('url')) return json['url'] as String?;
-    if (json.containsKey('stream_url')) return json['stream_url'] as String?;
     return null;
   }
 

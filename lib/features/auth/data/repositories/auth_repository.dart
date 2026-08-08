@@ -1,20 +1,24 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import '../../../../core/models/auth_models.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/storage/auth_local_storage.dart';
 import '../../../../core/storage/device_id_service.dart';
+import '../../../subscription/data/api/subscription_api_service.dart';
 import '../api/auth_api_service.dart';
 
 class AuthRepository {
   final AuthApiService authApiService;
   final AuthLocalStorage authLocalStorage;
   final DeviceIdService? deviceIdService;
+  final SubscriptionApiService? subscriptionApiService;
   final firebase.FirebaseAuth _firebaseAuth;
 
   AuthRepository({
     required this.authApiService,
     required this.authLocalStorage,
     this.deviceIdService,
+    this.subscriptionApiService,
     firebase.FirebaseAuth? firebaseAuth,
   }) : _firebaseAuth = firebaseAuth ?? firebase.FirebaseAuth.instance;
 
@@ -56,10 +60,12 @@ class AuthRepository {
       throw e;
     });
 
-    final idToken = await credential.user?.getIdToken();
+    final idToken = await credential.user?.getIdToken(true);
     if (idToken == null || idToken.isEmpty) {
       throw Exception('Failed to retrieve Firebase ID token');
     }
+
+    debugPrint('[AuthRepository] Firebase ID Token: $idToken');
 
     LoginResponse? loginResponse;
     try {
@@ -70,24 +76,43 @@ class AuthRepository {
           deviceType: deviceType ?? _currentDeviceType,
         ),
       );
-    } catch (_) {
-      // Backend sync failed; proceed with Firebase authenticated session
+    } catch (e) {
+      debugPrint('[AuthRepository] loginWithFirebaseToken error: $e');
     }
 
     final token = (loginResponse?.accessToken != null && loginResponse!.accessToken!.isNotEmpty)
         ? loginResponse.accessToken!
         : idToken;
 
+    debugPrint('[AuthRepository] Final Saved Access Token: $token');
+
     await authLocalStorage.saveTokens(
       accessToken: token,
       refreshToken: '',
     );
 
-    final user = loginResponse?.user ??
+    var user = loginResponse?.user ??
         User(
           id: credential.user?.uid ?? '',
           email: credential.user?.email ?? email,
         );
+
+    // Fetch live subscription status
+    if (subscriptionApiService != null) {
+      try {
+        final statusMap = await subscriptionApiService!.getStatus();
+        if (statusMap.containsKey('data') && statusMap['data'] is Map) {
+          final data = statusMap['data'] as Map<String, dynamic>;
+          final isActive = data['isActive'] == true || data['status'] == 'active';
+          final subDetails = SubscriptionDetails.fromJson(data);
+
+          user = user.copyWith(
+            isSubscribed: isActive ? 1 : 0,
+            subscriptionDetails: isActive ? subDetails : null,
+          );
+        }
+      } catch (_) {}
+    }
 
     await authLocalStorage.saveUserInfo(
       userId: user.id,
@@ -114,10 +139,12 @@ class AuthRepository {
       throw e;
     });
 
-    final idToken = await credential.user?.getIdToken();
+    final idToken = await credential.user?.getIdToken(true);
     if (idToken == null || idToken.isEmpty) {
       throw Exception('Failed to retrieve Firebase ID token');
     }
+
+    debugPrint('[AuthRepository] Firebase ID Token: $idToken');
 
     LoginResponse? loginResponse;
     try {
@@ -128,13 +155,15 @@ class AuthRepository {
           deviceType: deviceType ?? _currentDeviceType,
         ),
       );
-    } catch (_) {
-      // Backend sync failed; proceed with Firebase authenticated session
+    } catch (e) {
+      debugPrint('[AuthRepository] loginWithFirebaseToken error: $e');
     }
 
     final token = (loginResponse?.accessToken != null && loginResponse!.accessToken!.isNotEmpty)
         ? loginResponse.accessToken!
         : idToken;
+
+    debugPrint('[AuthRepository] Final Saved Access Token: $token');
 
     await authLocalStorage.saveTokens(
       accessToken: token,
@@ -155,20 +184,42 @@ class AuthRepository {
     return user;
   }
 
-  /// Get profile from backend
+  /// Get profile from backend & check live subscription status (GET /payments/status)
   Future<User?> getCurrentUser() async {
     if (!authLocalStorage.hasValidToken && _firebaseAuth.currentUser == null) {
       return null;
     }
+
+    User? user;
     try {
-      return await authApiService.getProfile();
+      user = await authApiService.getProfile();
     } catch (_) {
       final fbUser = _firebaseAuth.currentUser;
       if (fbUser != null) {
-        return User(id: fbUser.uid, email: fbUser.email ?? '');
+        user = User(id: fbUser.uid, email: fbUser.email ?? '');
       }
-      return null;
     }
+
+    if (user != null && subscriptionApiService != null) {
+      try {
+        final statusMap = await subscriptionApiService!.getStatus();
+        debugPrint('[AuthRepository] GET /payments/status response: $statusMap');
+        if (statusMap.containsKey('data') && statusMap['data'] is Map) {
+          final data = statusMap['data'] as Map<String, dynamic>;
+          final isActive = data['isActive'] == true || data['status'] == 'active';
+          final subDetails = SubscriptionDetails.fromJson(data);
+
+          user = user.copyWith(
+            isSubscribed: isActive ? 1 : 0,
+            subscriptionDetails: isActive ? subDetails : null,
+          );
+        }
+      } catch (e) {
+        debugPrint('[AuthRepository] Failed to fetch payment status: $e');
+      }
+    }
+
+    return user;
   }
 
   /// Logout

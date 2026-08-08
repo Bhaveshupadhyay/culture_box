@@ -18,8 +18,8 @@ import '../../features/subscription/data/api/subscription_api_service.dart';
 import '../../features/subscription/data/repositories/subscription_repository.dart';
 
 class ServiceLocator {
-  static final ServiceLocator instance = ServiceLocator._internal();
-  ServiceLocator._internal();
+  ServiceLocator._();
+  static final ServiceLocator instance = ServiceLocator._();
 
   late final SharedPreferences sharedPreferences;
   late final AuthLocalStorage authLocalStorage;
@@ -51,12 +51,17 @@ class ServiceLocator {
     deviceIdService = DeviceIdService(sharedPreferences);
     apiClient = ApiClient(authLocalStorage: authLocalStorage);
 
+    // Subscription & Payments
+    subscriptionApiService = SubscriptionApiService(apiClient);
+    subscriptionRepository = SubscriptionRepository(subscriptionApiService: subscriptionApiService);
+
     // Auth
     authApiService = AuthApiService(apiClient);
     authRepository = AuthRepository(
       authApiService: authApiService,
       authLocalStorage: authLocalStorage,
       deviceIdService: deviceIdService,
+      subscriptionApiService: subscriptionApiService,
     );
     authService = AuthService(authRepository);
     authBloc = AuthBloc(authService)..add(AuthCheckRequested());
@@ -65,10 +70,6 @@ class ServiceLocator {
     moviesApiService = MoviesApiService(apiClient);
     moviesRepository = MoviesRepository(moviesApiService: moviesApiService);
     homepageLayoutBloc = HomepageLayoutBloc(moviesRepository);
-
-    // Subscription & Payments
-    subscriptionApiService = SubscriptionApiService(apiClient);
-    subscriptionRepository = SubscriptionRepository(subscriptionApiService: subscriptionApiService);
 
     // Connected Devices
     devicesApiService = DevicesApiService(apiClient);

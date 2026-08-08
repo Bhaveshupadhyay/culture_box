@@ -1,21 +1,80 @@
+import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../app/di/service_locator.dart';
 import '../../../../app/theme/app_theme.dart';
+import '../../../../core/models/user_model.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../../auth/presentation/bloc/auth_event.dart';
 import '../../../auth/presentation/bloc/auth_state.dart';
 import '../../../auth/presentation/pages/login_page.dart';
-import '../../../movies/data/sources/mock_movies.dart';
-import '../../../movies/presentation/widgets/movie_card.dart';
+import '../../../subscription/presentation/pages/choose_plan_page.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
   @override
+  State<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+  User? _currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserProfile();
+  }
+
+  Future<void> _loadUserProfile() async {
+    final authRepo = ServiceLocator.instance.authRepository;
+    final user = await authRepo.getCurrentUser();
+    if (mounted) {
+      setState(() {
+        _currentUser = user;
+      });
+    }
+  }
+
+  void _confirmSignOut(BuildContext context, AuthBloc authBloc) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppColors.surface,
+        title: Text('Sign Out', style: AppTextStyles.detailsTitle),
+        content: Text(
+          'Are you sure you want to sign out of your account?',
+          style: AppTextStyles.bodySecondary,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('CANCEL', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.logoRedOrange,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              Navigator.pop(dialogContext);
+              authBloc.add(AuthLogoutRequested());
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Logged out successfully')),
+              );
+            },
+            child: const Text('SIGN OUT'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final watchlistMovies = mockMovies.take(3).toList();
     final authBloc = ServiceLocator.instance.authBloc;
+    final fbUser = firebase.FirebaseAuth.instance.currentUser;
+    final authRepo = ServiceLocator.instance.authRepository;
 
     return BlocProvider.value(
       value: authBloc,
@@ -30,72 +89,134 @@ class ProfilePage extends StatelessWidget {
         ),
         body: BlocBuilder<AuthBloc, AuthState>(
           builder: (context, state) {
-            final isAuthenticated = state is Authenticated;
-            final userEmail = isAuthenticated ? state.user.email : 'Guest User';
-            final userInitial = userEmail.isNotEmpty ? userEmail[0].toUpperCase() : 'G';
+            final isAuthenticated = authRepo.isAuthenticated || fbUser != null || state is Authenticated;
+
+            String email = _currentUser?.email ?? '';
+            if (email.isEmpty && state is Authenticated) {
+              email = state.user.email;
+            }
+            if (email.isEmpty && fbUser?.email != null) {
+              email = fbUser!.email!;
+            }
+            if (email.isEmpty) {
+              email = authRepo.authLocalStorage.getUserEmail() ?? '';
+            }
+
+            final displayName = _currentUser?.profileName != null && _currentUser!.profileName!.isNotEmpty
+                ? _currentUser!.profileName!
+                : (email.isNotEmpty ? email : 'Guest User');
+
+            final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : 'G';
+            final isSubscribed = (_currentUser?.isSubscribed ?? 0) == 1;
 
             return SingleChildScrollView(
               padding: AppSpacing.all16,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: AppSpacing.all16,
-                    decoration: BoxDecoration(
-                      color: AppColors.surface,
-                      borderRadius: BorderRadius.circular(AppSpacing.px12),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: AppColors.logoGradient,
-                          ),
-                          child: Center(
-                            child: Text(
-                              userInitial,
-                              style: const TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.black,
+                  // User Profile Header Card
+                  Material(
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(AppSpacing.px12),
+                    child: Padding(
+                      padding: AppSpacing.all16,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: AppColors.logoGradient,
+                            ),
+                            child: Center(
+                              child: Text(
+                                initial,
+                                style: const TextStyle(
+                                  fontSize: 26,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.black,
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                        AppSpacing.hGap16,
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                userEmail,
-                                style: AppTextStyles.profileName,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              AppSpacing.vGap4,
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: AppSpacing.px8, vertical: AppSpacing.px2),
-                                decoration: BoxDecoration(
-                                  color: AppColors.darkBanner,
-                                  borderRadius: BorderRadius.circular(AppSpacing.px4),
-                                  border: Border.all(color: AppColors.logoGold),
+                          AppSpacing.hGap16,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  displayName,
+                                  style: AppTextStyles.profileName,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                child: Text(
-                                  isAuthenticated ? 'PRO SUBSCRIBER' : 'FREE GUEST',
-                                  style: AppTextStyles.profileSubscriber,
+                                if (email.isNotEmpty && email != displayName) ...[
+                                  AppSpacing.vGap2,
+                                  Text(
+                                    email,
+                                    style: AppTextStyles.bodySmall,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                                AppSpacing.vGap6,
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: AppSpacing.px8, vertical: AppSpacing.px3),
+                                      decoration: BoxDecoration(
+                                        color: isSubscribed
+                                            ? AppColors.darkBanner
+                                            : Colors.grey.shade900,
+                                        borderRadius: BorderRadius.circular(AppSpacing.px4),
+                                        border: Border.all(
+                                          color: isSubscribed
+                                              ? AppColors.logoGold
+                                              : Colors.white24,
+                                        ),
+                                      ),
+                                      child: Text(
+                                        isSubscribed ? 'PRO SUBSCRIBER' : 'FREE MEMBER',
+                                        style: AppTextStyles.profileSubscriber.copyWith(
+                                          color: isSubscribed
+                                              ? AppColors.logoGold
+                                              : Colors.white60,
+                                        ),
+                                      ),
+                                    ),
+                                    if (!isSubscribed) ...[
+                                      AppSpacing.hGap8,
+                                      GestureDetector(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) => const ChoosePlanPage()),
+                                          );
+                                        },
+                                        child: Text(
+                                          'Upgrade Plan',
+                                          style: TextStyle(
+                                            color: AppColors.logoGold,
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.bold,
+                                            decoration: TextDecoration.underline,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
+                  /*
                   AppSpacing.vGap24,
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -121,16 +242,22 @@ class ProfilePage extends StatelessWidget {
                       },
                     ),
                   ),
+                  */
                   AppSpacing.vGap24,
                   Text(
                     'ACCOUNT & SETTINGS',
                     style: AppTextStyles.sectionHeaderSmall,
                   ),
                   AppSpacing.vGap12,
-                  _buildProfileOption(Icons.history, 'Watch History', () {}),
-                  _buildProfileOption(Icons.download, 'Downloads', () {}),
-                  _buildProfileOption(Icons.payment, 'Billing & Subscriptions', () {}),
-                  _buildProfileOption(Icons.lock, 'Parental Controls', () {}),
+                  // _buildProfileOption(Icons.history, 'Watch History', () {}),
+                  // _buildProfileOption(Icons.download, 'Downloads', () {}),
+                  _buildProfileOption(Icons.payment, 'Billing & Subscriptions', () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ChoosePlanPage()),
+                    );
+                  }),
+                  // _buildProfileOption(Icons.lock, 'Parental Controls', () {}),
                   _buildProfileOption(Icons.help_outline, 'Help & Support', () {}),
                   AppSpacing.vGap20,
                   SizedBox(
@@ -144,12 +271,7 @@ class ProfilePage extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(AppSpacing.px8),
                               ),
                             ),
-                            onPressed: () {
-                              authBloc.add(AuthLogoutRequested());
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Logged out successfully')),
-                              );
-                            },
+                            onPressed: () => _confirmSignOut(context, authBloc),
                             child: Text(
                               'SIGN OUT',
                               style: AppTextStyles.signOutText,
@@ -182,20 +304,21 @@ class ProfilePage extends StatelessWidget {
   }
 
   Widget _buildProfileOption(IconData icon, String title, VoidCallback onTap) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.px8),
-      decoration: BoxDecoration(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.px8),
+      child: Material(
         color: AppColors.surface,
         borderRadius: BorderRadius.circular(AppSpacing.px8),
-      ),
-      child: ListTile(
-        leading: Icon(icon, color: Colors.white70),
-        title: Text(
-          title,
-          style: AppTextStyles.bodyText,
+        clipBehavior: Clip.antiAlias,
+        child: ListTile(
+          leading: Icon(icon, color: Colors.white70),
+          title: Text(
+            title,
+            style: AppTextStyles.bodyText,
+          ),
+          trailing: const Icon(Icons.chevron_right, color: Colors.white38),
+          onTap: onTap,
         ),
-        trailing: const Icon(Icons.chevron_right, color: Colors.white38),
-        onTap: onTap,
       ),
     );
   }

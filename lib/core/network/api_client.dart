@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase;
+import 'package:flutter/foundation.dart';
 import '../errors/exceptions.dart';
 import '../storage/auth_local_storage.dart';
 import 'api_endpoints.dart';
@@ -34,42 +36,57 @@ class ApiClient {
         },
         onError: (DioException error, handler) async {
           if (error.response?.statusCode == 401) {
-            final refreshToken = authLocalStorage.getRefreshToken();
-            if (refreshToken != null && refreshToken.isNotEmpty) {
+            final fbUser = firebase.FirebaseAuth.instance.currentUser;
+            if (fbUser != null) {
               try {
-                // Attempt refresh token
-                final refreshDio = Dio(
-                  BaseOptions(
-                    baseUrl: baseUrl ?? ApiEndpoints.baseUrl,
-                    headers: {
-                      'Content-Type': 'application/json',
-                      'Accept': 'application/json',
+                debugPrint('[ApiClient] Received 401 Unauthorized. Attempting automatic token refresh via Firebase...');
+                final idToken = await fbUser.getIdToken(true);
+                if (idToken != null && idToken.isNotEmpty) {
+                  final refreshDio = Dio(
+                    BaseOptions(
+                      baseUrl: baseUrl ?? ApiEndpoints.baseUrl,
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                      },
+                    ),
+                  );
+
+                  final response = await refreshDio.post(
+                    ApiEndpoints.login,
+                    data: {
+                      'idToken': idToken,
+                      'deviceId': 'CBX123456789',
+                      'deviceType': 'android',
                     },
-                  ),
-                );
+                  );
 
-                final response = await refreshDio.post(
-                  ApiEndpoints.refresh,
-                  data: {'refresh_token': refreshToken},
-                );
+                  String? newAccessToken;
+                  if (response.statusCode == 200 && response.data != null) {
+                    final json = response.data as Map<String, dynamic>;
+                    if (json.containsKey('data') && json['data'] is Map) {
+                      newAccessToken = (json['data'] as Map)['accessToken'] as String?;
+                    } else if (json.containsKey('accessToken')) {
+                      newAccessToken = json['accessToken'] as String?;
+                    }
+                  }
 
-                if (response.statusCode == 200 && response.data != null) {
-                  final newAccessToken = response.data['access_token'] as String;
-                  final newRefreshToken = response.data['refresh_token'] as String;
+                  newAccessToken ??= idToken;
 
                   await authLocalStorage.saveTokens(
                     accessToken: newAccessToken,
-                    refreshToken: newRefreshToken,
+                    refreshToken: '',
                   );
 
-                  // Retry original request with new token
+                  debugPrint('[ApiClient] Successfully refreshed token. Retrying failed request...');
+
                   final retryOptions = error.requestOptions;
                   retryOptions.headers['Authorization'] = 'Bearer $newAccessToken';
                   final cloneReq = await _dio.fetch(retryOptions);
                   return handler.resolve(cloneReq);
                 }
-              } catch (_) {
-                await authLocalStorage.clearSession();
+              } catch (e) {
+                debugPrint('[ApiClient] Automatic token refresh failed: $e');
               }
             }
           }
@@ -182,14 +199,18 @@ class ApiClient {
     final data = error.response?.data;
     String message = 'An unexpected network error occurred.';
 
-    if (data is Map && data.containsKey('detail')) {
-      final detail = data['detail'];
-      if (detail is String) {
-        message = detail;
-      } else if (detail is List && detail.isNotEmpty) {
-        final firstError = detail.first;
-        if (firstError is Map && firstError.containsKey('msg')) {
-          message = firstError['msg'].toString();
+    if (data is Map) {
+      if (data.containsKey('message') && data['message'] != null && data['message'].toString().isNotEmpty) {
+        message = data['message'].toString();
+      } else if (data.containsKey('detail')) {
+        final detail = data['detail'];
+        if (detail is String) {
+          message = detail;
+        } else if (detail is List && detail.isNotEmpty) {
+          final firstError = detail.first;
+          if (firstError is Map && firstError.containsKey('msg')) {
+            message = firstError['msg'].toString();
+          }
         }
       }
     }

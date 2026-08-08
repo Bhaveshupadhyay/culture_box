@@ -40,17 +40,21 @@ class SectionCubit extends Cubit<SectionState> {
   SectionCubit(this.repository) : super(SectionInitial());
 
   Future<void> fetchSectionData(String endpointOrSectionId) async {
+    if (isClosed) return;
     emit(SectionLoading());
     try {
       final movies = await repository.getSectionData(endpointOrSectionId);
+      if (isClosed) return;
       if (movies.isEmpty) {
         emit(SectionEmpty());
       } else {
         emit(SectionLoaded(movies));
       }
     } on AppException catch (e) {
+      if (isClosed) return;
       emit(SectionError(e.message));
     } catch (e) {
+      if (isClosed) return;
       emit(const SectionError('Failed to load section content.'));
     }
   }

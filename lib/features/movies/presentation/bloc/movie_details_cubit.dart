@@ -46,6 +46,7 @@ class MovieDetailsCubit extends Cubit<MovieDetailsState> {
   MovieDetailsCubit(this.repository) : super(MovieDetailsInitial());
 
   Future<void> fetchMovieDetails(String movieId) async {
+    if (isClosed) return;
     emit(MovieDetailsLoading());
     try {
       final fullMovie = await repository.getMovieDetails(movieId);
@@ -62,6 +63,8 @@ class MovieDetailsCubit extends Cubit<MovieDetailsState> {
         relatedFuture,
       ]);
 
+      if (isClosed) return;
+
       final trailerUrl = results[0] as String;
       final videoUrl = results[1] as String;
       final related = results[2] as List<Movie>;
@@ -74,8 +77,10 @@ class MovieDetailsCubit extends Cubit<MovieDetailsState> {
         relatedMovies: filteredRelated,
       ));
     } on AppException catch (e) {
+      if (isClosed) return;
       emit(MovieDetailsError(e.message));
     } catch (e) {
+      if (isClosed) return;
       emit(const MovieDetailsError('Failed to load movie details.'));
     }
   }

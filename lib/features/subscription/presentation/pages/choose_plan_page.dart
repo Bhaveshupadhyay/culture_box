@@ -85,23 +85,38 @@ class _ChoosePlanPageState extends State<ChoosePlanPage> {
 
     try {
       final checkoutUrl = await ServiceLocator.instance.subscriptionRepository.createCheckoutSession(selectedPlan.id);
-      final uri = Uri.parse(checkoutUrl);
+      debugPrint('[ChoosePlanPage] Raw Stripe Checkout URL: $checkoutUrl');
 
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Could not open payment URL: $checkoutUrl')),
-          );
-        }
+      Uri uri = Uri.parse(checkoutUrl);
+      final queryParams = Map<String, String>.from(uri.queryParameters);
+      queryParams['device'] = 'app';
+      uri = uri.replace(queryParameters: queryParams);
+
+      debugPrint('[ChoosePlanPage] Final Payment Link with device=app: $uri');
+
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+
+      if (!launched && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not open payment URL: $checkoutUrl', style: const TextStyle(color: Colors.white)),
+            backgroundColor: AppColors.surfaceSecondary,
+          ),
+        );
       }
     } catch (e) {
+      debugPrint('[ChoosePlanPage] Checkout error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Initiated checkout for ${selectedPlan.planName} plan!'),
-            backgroundColor: AppColors.surface,
+            content: Text(
+              'Error opening checkout session: $e',
+              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+            ),
+            backgroundColor: AppColors.surfaceSecondary,
           ),
         );
       }
@@ -277,36 +292,44 @@ class _ChoosePlanPageState extends State<ChoosePlanPage> {
                       );
                     },
                   ),
-                  AppSpacing.vGap20,
-                  Container(
-                    width: double.infinity,
-                    height: AppSpacing.px50,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.buttonGradient,
-                      borderRadius: BorderRadius.circular(AppSpacing.px10),
-                    ),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.transparent,
-                        shadowColor: Colors.transparent,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(AppSpacing.px10),
-                        ),
-                      ),
-                      onPressed: _isProcessingPayment ? null : _proceedToPayment,
-                      child: _isProcessingPayment
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5),
-                            )
-                          : Text(
-                              'CONTINUE TO PAYMENT',
-                              style: AppTextStyles.buttonTextDark,
-                            ),
-                    ),
-                  ),
+                  AppSpacing.vGap30,
                 ],
+              ),
+            ),
+      bottomNavigationBar: _isLoadingPlans
+          ? null
+          : Container(
+              padding: AppSpacing.all16,
+              color: AppColors.background,
+              child: SafeArea(
+                child: Container(
+                  width: double.infinity,
+                  height: AppSpacing.px50,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.buttonGradient,
+                    borderRadius: BorderRadius.circular(AppSpacing.px10),
+                  ),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppSpacing.px10),
+                      ),
+                    ),
+                    onPressed: _isProcessingPayment ? null : _proceedToPayment,
+                    child: _isProcessingPayment
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5),
+                          )
+                        : Text(
+                            'CONTINUE TO PAYMENT',
+                            style: AppTextStyles.buttonTextDark,
+                          ),
+                  ),
+                ),
               ),
             ),
     );

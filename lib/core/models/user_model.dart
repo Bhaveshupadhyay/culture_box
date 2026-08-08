@@ -56,6 +56,24 @@ class User extends Equatable {
     this.subscriptionDetails,
   });
 
+  User copyWith({
+    String? id,
+    String? email,
+    String? profileName,
+    String? profileIconUrl,
+    int? isSubscribed,
+    SubscriptionDetails? subscriptionDetails,
+  }) {
+    return User(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      profileName: profileName ?? this.profileName,
+      profileIconUrl: profileIconUrl ?? this.profileIconUrl,
+      isSubscribed: isSubscribed ?? this.isSubscribed,
+      subscriptionDetails: subscriptionDetails ?? this.subscriptionDetails,
+    );
+  }
+
   factory User.fromJson(Map<String, dynamic> json) {
     final rawSub = json['is_subscribed'];
     int subVal = 0;

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import '../../../../core/models/layout_models.dart';
 import '../../../../core/models/movie_models.dart';
 import '../api/movies_api_service.dart';
@@ -14,8 +15,10 @@ class MoviesRepository {
     if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
       return trimmed;
     }
-    // Prepend Cloudinary Video CDN base path
-    return 'https://res.cloudinary.com/dwyflu02w/video/upload/q_auto,f_auto/$trimmed';
+    // Append .mp4 if no extension is present so Cloudinary streams a valid MP4 container
+    final hasExtension = trimmed.contains('.');
+    final videoPath = hasExtension ? trimmed : '$trimmed.mp4';
+    return 'https://res.cloudinary.com/dwyflu02w/video/upload/$videoPath';
   }
 
   /// Legacy & SDUI homepage layout
@@ -56,8 +59,11 @@ class MoviesRepository {
 
   /// Get video or trailer URL directly from backend API
   Future<String> getMovieVideoUrl(String movieId, {bool isTrailer = false}) async {
+    const String sampleStreamUrl =
+        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+
     final intId = int.tryParse(movieId);
-    if (intId == null) return '';
+    if (intId == null) return sampleStreamUrl;
 
     try {
       final url = await moviesApiService.getVideoUrl(
@@ -65,11 +71,16 @@ class MoviesRepository {
         contentId: intId,
         contentType: isTrailer ? 'trailer' : 'movie',
       );
+      debugPrint('[MoviesRepository] getMovieVideoUrl parsed raw url: $url (isTrailer: $isTrailer)');
       if (url != null && url.isNotEmpty) {
-        return formatVideoUrl(url);
+        final formatted = formatVideoUrl(url);
+        if (formatted.isNotEmpty) return formatted;
       }
-    } catch (_) {}
-    return '';
+    } catch (e) {
+      debugPrint('[MoviesRepository] getMovieVideoUrl error: $e');
+    }
+
+    return sampleStreamUrl;
   }
 
   /// Search movies

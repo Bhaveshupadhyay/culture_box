@@ -5,6 +5,7 @@ import '../../../../app/theme/app_theme.dart';
 import '../../../../core/widgets/app_network_image.dart';
 import '../../../../core/widgets/shimmer_loading.dart';
 import '../../../auth/presentation/pages/login_page.dart';
+import '../../../subscription/presentation/pages/choose_plan_page.dart';
 import '../../data/models/movie.dart';
 import '../bloc/movie_details_cubit.dart';
 import '../widgets/movie_card.dart';
@@ -35,8 +36,10 @@ class _DetailsPageState extends State<DetailsPage> {
     super.dispose();
   }
 
-  void _onWatchNowPressed(Movie movie, String videoUrl) {
-    final isAuthenticated = ServiceLocator.instance.authRepository.isAuthenticated;
+  Future<void> _onWatchNowPressed(Movie movie, String videoUrl) async {
+    final authRepo = ServiceLocator.instance.authRepository;
+    final isAuthenticated = authRepo.isAuthenticated;
+
     if (!isAuthenticated) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -49,7 +52,31 @@ class _DetailsPageState extends State<DetailsPage> {
         context,
         MaterialPageRoute(builder: (context) => const LoginPage()),
       );
-    } else {
+      return;
+    }
+
+    // Check user subscription status
+    final user = await authRepo.getCurrentUser();
+    final isSubscribed = (user?.isSubscribed ?? 0) == 1;
+
+    if (!isSubscribed) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Active subscription required to watch full movies. Choose a plan to unlock.'),
+            backgroundColor: AppColors.logoRedOrange,
+            duration: Duration(seconds: 3),
+          ),
+        );
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const ChoosePlanPage()),
+        );
+      }
+      return;
+    }
+
+    if (mounted) {
       Navigator.push(
         context,
         MaterialPageRoute(

@@ -9,10 +9,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool _cellularDataSaver = false;
-  bool _autoPlayNext = true;
   bool _notifications = true;
-  String _videoQuality = 'Auto (High)';
 
   @override
   Widget build(BuildContext context) {
@@ -28,57 +25,6 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView(
         padding: AppSpacing.all16,
         children: [
-          Text(
-            'VIDEO PLAYBACK',
-            style: AppTextStyles.sectionHeaderSmall,
-          ),
-          AppSpacing.vGap8,
-          ListTile(
-            tileColor: AppColors.surface,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.px8)),
-            title: Text('Streaming Quality',
-                style: AppTextStyles.bodyText),
-            subtitle: Text(_videoQuality,
-                style: AppTextStyles.textMuted),
-            trailing: const Icon(Icons.chevron_right, color: Colors.white38),
-            onTap: () {
-              _showQualityPicker();
-            },
-          ),
-          AppSpacing.vGap8,
-          SwitchListTile(
-            tileColor: AppColors.surface,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.px8)),
-            title: Text('Save Cellular Data',
-                style: AppTextStyles.bodyText),
-            subtitle: Text('Stream in lower resolution on mobile networks',
-                style: AppTextStyles.textMuted),
-            value: _cellularDataSaver,
-            activeTrackColor: AppColors.badgeGreen,
-            onChanged: (val) {
-              setState(() {
-                _cellularDataSaver = val;
-              });
-            },
-          ),
-          AppSpacing.vGap8,
-          SwitchListTile(
-            tileColor: AppColors.surface,
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppSpacing.px8)),
-            title: Text('Autoplay Next Episode',
-                style: AppTextStyles.bodyText),
-            value: _autoPlayNext,
-            activeTrackColor: AppColors.badgeGreen,
-            onChanged: (val) {
-              setState(() {
-                _autoPlayNext = val;
-              });
-            },
-          ),
-          AppSpacing.vGap24,
           Text(
             'NOTIFICATIONS',
             style: AppTextStyles.sectionHeaderSmall,
@@ -121,33 +67,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ],
       ),
-    );
-  }
-
-  void _showQualityPicker() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: AppColors.surface,
-      builder: (context) {
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: ['Auto (High)', '1080p Full HD', '720p HD', 'Data Saver']
-              .map((q) {
-            return ListTile(
-              title: Text(q, style: AppTextStyles.bodyText),
-              trailing: _videoQuality == q
-                  ? const Icon(Icons.check, color: AppColors.primaryBlue)
-                  : null,
-              onTap: () {
-                setState(() {
-                  _videoQuality = q;
-                });
-                Navigator.pop(context);
-              },
-            );
-          }).toList(),
-        );
-      },
     );
   }
 }
