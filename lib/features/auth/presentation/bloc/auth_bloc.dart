@@ -42,7 +42,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } on AppException catch (e) {
       emit(AuthFailure(e.message));
     } catch (e) {
-      emit(const AuthFailure('Login failed. Please check your credentials.'));
+      final msg = e.toString().replaceAll('Exception: ', '');
+      emit(AuthFailure(msg.isNotEmpty ? msg : 'Login failed. Please check your credentials.'));
     }
   }
 
@@ -57,7 +58,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     } on AppException catch (e) {
       emit(AuthFailure(e.message));
     } catch (e) {
-      emit(const AuthFailure('Registration failed. Please try again.'));
+      final msg = e.toString().replaceAll('Exception: ', '');
+      emit(AuthFailure(msg.isNotEmpty ? msg : 'Registration failed. Please try again.'));
     }
   }
 
