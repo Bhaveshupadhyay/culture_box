@@ -11,6 +11,8 @@ import '../../features/movies/data/repositories/movies_repository.dart';
 import '../../features/movies/presentation/bloc/homepage_layout_bloc.dart';
 import '../../features/movies/presentation/bloc/movie_details_cubit.dart';
 import '../../features/movies/presentation/bloc/search_cubit.dart';
+import '../../features/subscription/data/api/subscription_api_service.dart';
+import '../../features/subscription/data/repositories/subscription_repository.dart';
 
 class ServiceLocator {
   static final ServiceLocator instance = ServiceLocator._internal();
@@ -28,6 +30,9 @@ class ServiceLocator {
   late final MoviesApiService moviesApiService;
   late final MoviesRepository moviesRepository;
   late final HomepageLayoutBloc homepageLayoutBloc;
+
+  late final SubscriptionApiService subscriptionApiService;
+  late final SubscriptionRepository subscriptionRepository;
 
   bool _initialized = false;
 
@@ -51,6 +56,10 @@ class ServiceLocator {
     moviesApiService = MoviesApiService(apiClient);
     moviesRepository = MoviesRepository(moviesApiService: moviesApiService);
     homepageLayoutBloc = HomepageLayoutBloc(moviesRepository);
+
+    // Subscription & Payments
+    subscriptionApiService = SubscriptionApiService(apiClient);
+    subscriptionRepository = SubscriptionRepository(subscriptionApiService: subscriptionApiService);
 
     _initialized = true;
   }

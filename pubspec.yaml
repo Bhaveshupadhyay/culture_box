@@ -45,6 +45,7 @@ dependencies:
   chewie: ^1.14.1
   firebase_core: ^4.13.0
   firebase_auth: ^6.5.7
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
