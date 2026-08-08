@@ -25,10 +25,13 @@ class SubscriptionApiService {
   }
 
   /// Create Checkout Session (POST /payments/checkout-session)
-  Future<String> createCheckoutSession(int planId) async {
+  Future<String> createCheckoutSession(int planId, {String device = 'app'}) async {
     final response = await apiClient.post(
       ApiEndpoints.checkoutSession,
-      data: {'plan_id': planId},
+      data: {
+        'plan_id': planId,
+        'device': device,
+      },
     );
     final json = response.data as Map<String, dynamic>;
     if (json.containsKey('data') && json['data'] is Map) {

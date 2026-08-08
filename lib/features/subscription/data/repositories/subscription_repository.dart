@@ -19,8 +19,8 @@ class SubscriptionRepository {
     ];
   }
 
-  Future<String> createCheckoutSession(int planId) async {
-    return await subscriptionApiService.createCheckoutSession(planId);
+  Future<String> createCheckoutSession(int planId, {String device = 'app'}) async {
+    return await subscriptionApiService.createCheckoutSession(planId, device: device);
   }
 
   Future<Map<String, dynamic>> getStatus() async {

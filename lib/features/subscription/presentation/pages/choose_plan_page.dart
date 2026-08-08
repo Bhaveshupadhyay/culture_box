@@ -84,18 +84,11 @@ class _ChoosePlanPageState extends State<ChoosePlanPage> {
     setState(() => _isProcessingPayment = true);
 
     try {
-      final checkoutUrl = await ServiceLocator.instance.subscriptionRepository.createCheckoutSession(selectedPlan.id);
-      debugPrint('[ChoosePlanPage] Raw Stripe Checkout URL: $checkoutUrl');
-
-      Uri uri = Uri.parse(checkoutUrl);
-      final queryParams = Map<String, String>.from(uri.queryParameters);
-      queryParams['device'] = 'app';
-      uri = uri.replace(queryParameters: queryParams);
-
-      debugPrint('[ChoosePlanPage] Final Payment Link with device=app: $uri');
+      final checkoutUrl = await ServiceLocator.instance.subscriptionRepository.createCheckoutSession(selectedPlan.id, device: 'app');
+      debugPrint('[ChoosePlanPage] Stripe Checkout URL: $checkoutUrl');
 
       final launched = await launchUrl(
-        uri,
+        Uri.parse(checkoutUrl),
         mode: LaunchMode.externalApplication,
       );
 
