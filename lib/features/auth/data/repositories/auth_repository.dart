@@ -1,32 +1,25 @@
-import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import '../../../../core/models/auth_models.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/storage/auth_local_storage.dart';
+import '../../../../core/storage/device_id_service.dart';
 import '../api/auth_api_service.dart';
 
 class AuthRepository {
   final AuthApiService authApiService;
   final AuthLocalStorage authLocalStorage;
+  final DeviceIdService? deviceIdService;
   final firebase.FirebaseAuth _firebaseAuth;
 
   AuthRepository({
     required this.authApiService,
     required this.authLocalStorage,
+    this.deviceIdService,
     firebase.FirebaseAuth? firebaseAuth,
   }) : _firebaseAuth = firebaseAuth ?? firebase.FirebaseAuth.instance;
 
-  String get _defaultDeviceType {
-    if (kIsWeb) return 'web';
-    switch (defaultTargetPlatform) {
-      case TargetPlatform.iOS:
-        return 'ios';
-      case TargetPlatform.android:
-        return 'android';
-      default:
-        return 'web';
-    }
-  }
+  String get _currentDeviceId => deviceIdService?.getDeviceId() ?? 'CBX123456789';
+  String get _currentDeviceType => deviceIdService?.getDeviceType() ?? 'android';
 
   /// Firebase Sign In + Backend Authentication
   Future<User> login({
@@ -48,8 +41,8 @@ class AuthRepository {
     final loginResponse = await authApiService.loginWithFirebaseToken(
       FirebaseLoginRequest(
         idToken: idToken,
-        deviceId: deviceId,
-        deviceType: deviceType ?? _defaultDeviceType,
+        deviceId: deviceId ?? _currentDeviceId,
+        deviceType: deviceType ?? _currentDeviceType,
       ),
     );
 
@@ -99,8 +92,8 @@ class AuthRepository {
     final loginResponse = await authApiService.loginWithFirebaseToken(
       FirebaseLoginRequest(
         idToken: idToken,
-        deviceId: deviceId,
-        deviceType: deviceType ?? _defaultDeviceType,
+        deviceId: deviceId ?? _currentDeviceId,
+        deviceType: deviceType ?? _currentDeviceType,
       ),
     );
 
@@ -162,7 +155,6 @@ class AuthRepository {
       throw Exception('User is not authenticated with Firebase.');
     }
 
-    // Delete Firebase Auth user first (throws re-auth error if required before backend deletion)
     await fbUser.delete();
 
     try {

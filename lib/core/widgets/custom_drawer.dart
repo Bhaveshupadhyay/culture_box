@@ -8,6 +8,7 @@ import '../../features/auth/presentation/bloc/auth_state.dart';
 import '../../features/auth/presentation/pages/login_page.dart';
 import '../../features/movies/presentation/pages/home_page.dart';
 import '../../features/movies/presentation/pages/search_page.dart';
+import '../../features/profile/presentation/pages/devices_page.dart';
 import '../../features/profile/presentation/pages/profile_page.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/subscription/presentation/pages/choose_plan_page.dart';
@@ -108,6 +109,18 @@ class CustomDrawer extends StatelessWidget {
               ),
               _buildDrawerTile(
                 context,
+                icon: Icons.devices,
+                title: 'Connected Devices',
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const DevicesPage()),
+                  );
+                },
+              ),
+              _buildDrawerTile(
+                context,
                 icon: Icons.person,
                 title: 'Profile',
                 onTap: () {
@@ -142,70 +155,20 @@ class CustomDrawer extends StatelessWidget {
                         authBloc.add(AuthLogoutRequested());
                       },
                     );
-                  } else {
-                    return _buildDrawerTile(
-                      context,
-                      icon: Icons.login,
-                      title: 'Sign In / Register',
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LoginPage()),
-                        );
-                      },
-                    );
                   }
-                },
-              ),
-              const Divider(color: Colors.white12, height: AppSpacing.px32),
-              // Genres Section
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: AppSpacing.px16, vertical: AppSpacing.px8),
-                child: Text(
-                  'BROWSE BY GENRE',
-                  style: AppTextStyles.sectionHeaderSmall,
-                ),
-              ),
-              Wrap(
-                spacing: AppSpacing.px8,
-                runSpacing: AppSpacing.px8,
-                children: [
-                  'Action',
-                  'Adventure',
-                  'Comedy',
-                  'Crime',
-                  'Drama',
-                  'Fantasy',
-                  'Horror',
-                  'Romance',
-                  'Science Fiction',
-                  'Thriller'
-                ].map((genre) {
-                  return Padding(
-                    padding: const EdgeInsets.only(left: AppSpacing.px16),
-                    child: FilterChip(
-                      label: Text(
-                        genre,
-                        style: AppTextStyles.bodySmall,
-                      ),
-                      backgroundColor: AppColors.surface,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppSpacing.px6),
-                      ),
-                      onSelected: (selected) {
-                        Navigator.pop(context);
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SearchPage(initialQuery: genre),
-                          ),
-                        );
-                      },
-                    ),
+                  return _buildDrawerTile(
+                    context,
+                    icon: Icons.login,
+                    title: 'Sign In / Register',
+                    onTap: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginPage()),
+                      );
+                    },
                   );
-                }).toList(),
+                },
               ),
               AppSpacing.vGap24,
             ],
@@ -222,27 +185,18 @@ class CustomDrawer extends StatelessWidget {
     required VoidCallback onTap,
     bool isHighlight = false,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.px12, vertical: AppSpacing.px4),
-      decoration: BoxDecoration(
-        gradient: isHighlight ? AppColors.buttonGradient : null,
-        color: isHighlight ? null : Colors.transparent,
-        borderRadius: BorderRadius.circular(AppSpacing.px8),
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: isHighlight ? AppColors.logoGold : Colors.white70,
       ),
-      child: ListTile(
-        leading: Icon(
-          icon,
-          color: isHighlight ? Colors.black : Colors.white70,
-        ),
-        title: Text(
-          title,
-          style: isHighlight
-              ? AppTextStyles.drawerTileHighlight
-              : AppTextStyles.drawerTile,
-        ),
-        onTap: onTap,
+      title: Text(
+        title,
+        style: isHighlight
+            ? AppTextStyles.drawerTileHighlight
+            : AppTextStyles.drawerTile,
       ),
+      onTap: onTap,
     );
   }
 }
