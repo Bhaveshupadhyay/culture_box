@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'enums.dart';
+import 'movie_models.dart';
 
 class LayoutSectionModel extends Equatable {
   final String sectionId;
@@ -165,6 +166,21 @@ class HomeSliderModel extends Equatable {
       'release_date': releaseDate,
       'sub_categories': subCategories,
     };
+  }
+
+  Movie toMovie() {
+    return Movie(
+      id: id.toString(),
+      title: title,
+      description: description,
+      backdropUrl: backdropUrl,
+      contentType: contentType,
+      rating: rating,
+      voteAverage: double.tryParse(rating ?? '5.0') ?? 5.0,
+      year: releaseDate,
+      isOriginal: true,
+      isTrending: true,
+    );
   }
 
   @override

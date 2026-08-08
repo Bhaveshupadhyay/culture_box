@@ -28,12 +28,16 @@ class HomepageLayoutInitial extends HomepageLayoutState {}
 class HomepageLayoutLoading extends HomepageLayoutState {}
 
 class HomepageLayoutLoaded extends HomepageLayoutState {
+  final List<HomeSliderModel> sliders;
   final List<LayoutSectionModel> sections;
 
-  const HomepageLayoutLoaded(this.sections);
+  const HomepageLayoutLoaded({
+    required this.sliders,
+    required this.sections,
+  });
 
   @override
-  List<Object?> get props => [sections];
+  List<Object?> get props => [sliders, sections];
 }
 
 class HomepageLayoutError extends HomepageLayoutState {
@@ -58,12 +62,17 @@ class HomepageLayoutBloc extends Bloc<HomepageLayoutEvent, HomepageLayoutState> 
   ) async {
     emit(HomepageLayoutLoading());
     try {
-      final layout = await repository.getHomepageLayout(screenName: event.screenName);
-      if (layout.sections.isEmpty) {
-        emit(const HomepageLayoutError('No sections found.'));
-      } else {
-        emit(HomepageLayoutLoaded(layout.sections));
-      }
+      final slidersFuture = repository.getHomeSliders();
+      final layoutFuture = repository.getHomepageLayout(screenName: event.screenName);
+
+      final results = await Future.wait([slidersFuture, layoutFuture]);
+      final sliders = results[0] as List<HomeSliderModel>;
+      final layout = results[1] as HomepageLayoutResponseModel;
+
+      emit(HomepageLayoutLoaded(
+        sliders: sliders,
+        sections: layout.sections,
+      ));
     } on AppException catch (e) {
       emit(HomepageLayoutError(e.message));
     } catch (e) {

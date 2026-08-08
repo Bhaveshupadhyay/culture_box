@@ -1,8 +1,6 @@
-import '../../../../core/models/enums.dart';
 import '../../../../core/models/layout_models.dart';
 import '../../../../core/models/movie_models.dart';
 import '../api/movies_api_service.dart';
-import '../sources/mock_movies.dart';
 
 class MoviesRepository {
   final MoviesApiService moviesApiService;
@@ -19,31 +17,7 @@ class MoviesRepository {
       }
     } catch (_) {}
 
-    return const HomepageLayoutResponseModel(
-      sections: [
-        LayoutSectionModel(
-          sectionId: 'trending_hero',
-          sectionName: 'Trending Now',
-          widgetType: WidgetType.heroCarousel,
-          scrollType: ScrollType.horizontal,
-          dataEndpoint: '6',
-        ),
-        LayoutSectionModel(
-          sectionId: 'new_releases',
-          sectionName: 'Popular Movies',
-          widgetType: WidgetType.horizontalList,
-          scrollType: ScrollType.horizontal,
-          dataEndpoint: '8',
-        ),
-        LayoutSectionModel(
-          sectionId: 'top_rated',
-          sectionName: 'Trending',
-          widgetType: WidgetType.horizontalList,
-          scrollType: ScrollType.horizontal,
-          dataEndpoint: '7',
-        ),
-      ],
-    );
+    return const HomepageLayoutResponseModel(sections: []);
   }
 
   /// Get row items / section data
@@ -52,44 +26,28 @@ class MoviesRepository {
       final intId = int.tryParse(endpointOrSectionId);
       if (intId != null) {
         final response = await moviesApiService.getContentRow(intId);
-        if (response.data.isNotEmpty) {
-          return response.data.map((c) => c.toMovie()).toList();
-        }
+        return response.data.map((c) => c.toMovie()).toList();
       }
     } catch (_) {}
 
-    final lowerId = endpointOrSectionId.toLowerCase();
-    if (lowerId.contains('hero') || lowerId.contains('trending') || lowerId == '6') {
-      return mockMovies.where((m) => m.isOriginal || m.isTrending).toList();
-    } else if (lowerId.contains('new') || lowerId.contains('popular') || lowerId == '8') {
-      return mockMovies.where((m) => m.isOriginal || m.isNowPlaying).toList();
-    } else if (lowerId.contains('top') || lowerId == '7') {
-      return mockMovies.where((m) => m.isTopRated || m.isPopular).toList();
-    }
-    return mockMovies;
+    return [];
   }
 
   /// Get movie details
   Future<Movie> getMovieDetails(String movieId) async {
-    try {
-      final intId = int.tryParse(movieId);
-      if (intId != null) {
-        final details = await moviesApiService.getContentDetails(intId);
-        return details.toMovie();
-      }
-    } catch (_) {}
-
-    return mockMovies.firstWhere(
-      (m) => m.id == movieId,
-      orElse: () => mockMovies.first,
-    );
+    final intId = int.tryParse(movieId);
+    if (intId != null) {
+      final details = await moviesApiService.getContentDetails(intId);
+      return details.toMovie();
+    }
+    throw Exception('Movie not found');
   }
 
   /// Get video or trailer URL
   Future<String> getMovieVideoUrl(String movieId, {bool isTrailer = false}) async {
     const String defaultVideoUrl =
         'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4';
-    
+
     final intId = int.tryParse(movieId);
     if (intId == null) {
       return defaultVideoUrl;
@@ -123,24 +81,26 @@ class MoviesRepository {
         }
       }
     } catch (_) {}
-
-    final query = q?.toLowerCase().trim() ?? '';
-    return mockMovies.where((movie) {
-      final matchesQuery = query.isEmpty ||
-          movie.title.toLowerCase().contains(query) ||
-          movie.description.toLowerCase().contains(query);
-      final matchesGenre = genre == null || genre == 'All' || movie.genres.contains(genre);
-      return matchesQuery && matchesGenre;
-    }).toList();
+    return [];
   }
 
-  /// Get Home Sliders
+  /// Recommended Content (GET /users/content/{id}/recommended)
+  Future<List<Movie>> getRecommendedContent(int id) async {
+    try {
+      final response = await moviesApiService.getRecommendedContent(id);
+      return response.data.map((c) => c.toMovie()).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Get Home Sliders (GET /users/home/sliders)
   Future<List<HomeSliderModel>> getHomeSliders() async {
     try {
-      final sliders = await moviesApiService.getHomeSliders();
-      if (sliders.isNotEmpty) return sliders;
-    } catch (_) {}
-    return [];
+      return await moviesApiService.getHomeSliders();
+    } catch (_) {
+      return [];
+    }
   }
 
   /// Get User Plans

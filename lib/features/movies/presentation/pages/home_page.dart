@@ -6,6 +6,7 @@ import '../../../../core/widgets/culturebox_logo.dart';
 import '../../../../core/widgets/custom_drawer.dart';
 import '../../../../core/widgets/shimmer_loading.dart';
 import '../bloc/homepage_layout_bloc.dart';
+import '../widgets/hero_carousel.dart';
 import '../widgets/sdui_section_item.dart';
 import 'search_page.dart';
 
@@ -100,6 +101,7 @@ class _HomePageState extends State<HomePage> {
               }
 
               if (state is HomepageLayoutLoaded) {
+                final sliders = state.sliders;
                 final sections = state.sections;
 
                 return SingleChildScrollView(
@@ -107,6 +109,11 @@ class _HomePageState extends State<HomePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Top Slider Hero Carousel from GET /users/home/sliders
+                      if (sliders.isNotEmpty)
+                        HeroCarousel(
+                          movies: sliders.map((s) => s.toMovie()).toList(),
+                        ),
                       ...sections.map(
                         (section) => SduiSectionItem(
                           key: ValueKey(section.sectionId),

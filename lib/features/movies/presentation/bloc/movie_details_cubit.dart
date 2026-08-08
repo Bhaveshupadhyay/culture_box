@@ -49,13 +49,12 @@ class MovieDetailsCubit extends Cubit<MovieDetailsState> {
     emit(MovieDetailsLoading());
     try {
       final fullMovie = await repository.getMovieDetails(movieId);
-      
-      // Concurrently fetch video & trailer asset URLs
+      final intId = int.tryParse(movieId) ?? 0;
+
+      // Concurrently fetch video & trailer asset URLs and recommended content via GET /users/content/{id}/recommended
       final trailerUrlFuture = repository.getMovieVideoUrl(movieId, isTrailer: true);
       final videoUrlFuture = repository.getMovieVideoUrl(movieId, isTrailer: false);
-      final relatedFuture = repository.searchMovies(
-        genre: fullMovie.genres.isNotEmpty ? fullMovie.genres.first : null,
-      );
+      final relatedFuture = repository.getRecommendedContent(intId);
 
       final results = await Future.wait([
         trailerUrlFuture,
