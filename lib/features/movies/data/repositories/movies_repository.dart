@@ -7,6 +7,17 @@ class MoviesRepository {
 
   MoviesRepository({required this.moviesApiService});
 
+  /// Formats relative video URLs (e.g. 'uploads/...') into full Cloudinary CDN Video URLs
+  static String formatVideoUrl(String? url) {
+    if (url == null || url.trim().isEmpty) return '';
+    final trimmed = url.trim();
+    if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+      return trimmed;
+    }
+    // Prepend Cloudinary Video CDN base path
+    return 'https://res.cloudinary.com/dwyflu02w/video/upload/q_auto,f_auto/$trimmed';
+  }
+
   /// Legacy & SDUI homepage layout
   Future<HomepageLayoutResponseModel> getHomepageLayout({String screenName = 'default'}) async {
     try {
@@ -43,15 +54,10 @@ class MoviesRepository {
     throw Exception('Movie not found');
   }
 
-  /// Get video or trailer URL
+  /// Get video or trailer URL directly from backend API
   Future<String> getMovieVideoUrl(String movieId, {bool isTrailer = false}) async {
-    const String defaultVideoUrl =
-        'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4';
-
     final intId = int.tryParse(movieId);
-    if (intId == null) {
-      return defaultVideoUrl;
-    }
+    if (intId == null) return '';
 
     try {
       final url = await moviesApiService.getVideoUrl(
@@ -60,10 +66,10 @@ class MoviesRepository {
         contentType: isTrailer ? 'trailer' : 'movie',
       );
       if (url != null && url.isNotEmpty) {
-        return url;
+        return formatVideoUrl(url);
       }
     } catch (_) {}
-    return defaultVideoUrl;
+    return '';
   }
 
   /// Search movies

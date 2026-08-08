@@ -62,7 +62,9 @@ class MoviesApiService {
       queryParameters: queryParams,
     );
     final json = response.data as Map<String, dynamic>;
-    final dataMap = json['data'] != null ? json['data'] as Map<String, dynamic> : json;
+    final dataMap = json['data'] != null && json['data'] is Map<String, dynamic>
+        ? json['data'] as Map<String, dynamic>
+        : json;
     return ContentDetailsModel.fromJson(dataMap);
   }
 
@@ -81,10 +83,19 @@ class MoviesApiService {
       },
     );
     final json = response.data as Map<String, dynamic>;
-    if (json.containsKey('data') && json['data'] is Map) {
-      final dataMap = json['data'] as Map<String, dynamic>;
-      return dataMap['video_url'] as String?;
+    if (json.containsKey('data')) {
+      final data = json['data'];
+      if (data is String && data.isNotEmpty) return data;
+      if (data is Map<String, dynamic>) {
+        return data['video_url'] as String? ??
+            data['url'] as String? ??
+            data['stream_url'] as String? ??
+            data['videoUrl'] as String?;
+      }
     }
+    if (json.containsKey('video_url')) return json['video_url'] as String?;
+    if (json.containsKey('url')) return json['url'] as String?;
+    if (json.containsKey('stream_url')) return json['stream_url'] as String?;
     return null;
   }
 
@@ -100,36 +111,30 @@ class MoviesApiService {
     int? limit,
     String? cursor,
   }) async {
-    final queryParams = <String, dynamic>{'q': query};
-    if (limit != null) queryParams['limit'] = limit;
-    if (cursor != null) queryParams['cursor'] = cursor;
-
     final response = await apiClient.get(
       ApiEndpoints.search,
-      queryParameters: queryParams,
+      queryParameters: {
+        'q': query,
+        ...?limit == null ? null : {'limit': limit},
+        ...?cursor == null ? null : {'cursor': cursor},
+      },
     );
     return PaginatedContentResponse.fromJson(response.data as Map<String, dynamic>);
   }
 
-  /// Get Public Active Plans (GET /users/plans)
+  /// Get Active Plans (GET /users/plans)
   Future<List<PlanModel>> getUserPlans() async {
     final response = await apiClient.get(ApiEndpoints.userPlans);
     final json = response.data as Map<String, dynamic>;
-    if (json['data'] is Map && (json['data'] as Map).containsKey('plans')) {
-      final plansList = (json['data']['plans'] as List? ?? [])
-          .map((e) => PlanModel.fromJson(e as Map<String, dynamic>))
-          .toList();
-      return plansList;
-    }
-    return [];
-  }
-
-  /// Get Categories List (GET /users/categories)
-  Future<List<Map<String, dynamic>>> getCategories() async {
-    final response = await apiClient.get(ApiEndpoints.userCategories);
-    final json = response.data as Map<String, dynamic>;
-    if (json['data'] is List) {
-      return (json['data'] as List).cast<Map<String, dynamic>>();
+    if (json.containsKey('data')) {
+      final data = json['data'];
+      if (data is List) {
+        return data.map((e) => PlanModel.fromJson(e as Map<String, dynamic>)).toList();
+      } else if (data is Map && data.containsKey('plans')) {
+        return (data['plans'] as List)
+            .map((e) => PlanModel.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
     }
     return [];
   }
