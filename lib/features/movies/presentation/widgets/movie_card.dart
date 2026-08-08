@@ -47,7 +47,7 @@ class MovieCard extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             AppNetworkImage(
-              imageUrl: movie.posterUrl,
+              imageUrl: movie.effectivePoster,
               fit: BoxFit.cover,
             ),
             // Gradient Overlay
@@ -82,7 +82,7 @@ class MovieCard extends StatelessWidget {
                     const Icon(Icons.star, color: AppColors.logoGold, size: 11),
                     AppSpacing.hGap3,
                     Text(
-                      movie.rating.toStringAsFixed(1),
+                      movie.voteAverage.toStringAsFixed(1),
                       style: AppTextStyles.cardRating,
                     ),
                   ],
@@ -106,7 +106,10 @@ class MovieCard extends StatelessWidget {
                   ),
                   AppSpacing.vGap2,
                   Text(
-                    '${movie.year} • ${movie.certification}',
+                    [
+                      if (movie.year != null) '${movie.year}',
+                      if (movie.certification != null) movie.certification,
+                    ].join(' • '),
                     style: AppTextStyles.cardSubtitle,
                   ),
                 ],

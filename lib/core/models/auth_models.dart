@@ -1,72 +1,116 @@
 import 'package:equatable/equatable.dart';
+import 'user_model.dart';
 
-class TokenModel extends Equatable {
-  final String accessToken;
-  final String refreshToken;
-  final String tokenType;
+class FirebaseLoginRequest extends Equatable {
+  final String idToken;
+  final String? deviceId;
+  final String? deviceType;
 
-  const TokenModel({
-    required this.accessToken,
-    required this.refreshToken,
-    this.tokenType = 'bearer',
+  const FirebaseLoginRequest({
+    required this.idToken,
+    this.deviceId,
+    this.deviceType,
   });
 
-  factory TokenModel.fromJson(Map<String, dynamic> json) {
-    return TokenModel(
-      accessToken: json['access_token'] as String,
-      refreshToken: json['refresh_token'] as String,
-      tokenType: json['token_type'] as String? ?? 'bearer',
+  Map<String, dynamic> toJson() {
+    return {
+      'idToken': idToken,
+      if (deviceId != null) 'deviceId': deviceId,
+      if (deviceType != null) 'deviceType': deviceType,
+    };
+  }
+
+  @override
+  List<Object?> get props => [idToken, deviceId, deviceType];
+}
+
+class LoginResponse extends Equatable {
+  final String? accessToken;
+  final String? reasonCode;
+  final User? user;
+
+  const LoginResponse({
+    this.accessToken,
+    this.reasonCode,
+    this.user,
+  });
+
+  factory LoginResponse.fromJson(Map<String, dynamic> json) {
+    return LoginResponse(
+      accessToken: json['accessToken'] as String?,
+      reasonCode: json['reasonCode'] as String?,
+      user: json['user'] != null
+          ? User.fromJson(json['user'] as Map<String, dynamic>)
+          : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'access_token': accessToken,
-      'refresh_token': refreshToken,
-      'token_type': tokenType,
+      'accessToken': accessToken,
+      'reasonCode': reasonCode,
+      'user': user?.toJson(),
     };
   }
 
   @override
-  List<Object?> get props => [accessToken, refreshToken, tokenType];
+  List<Object?> get props => [accessToken, reasonCode, user];
 }
 
-class UserCreateRequest extends Equatable {
+class SendOtpRequest extends Equatable {
   final String email;
-  final String password;
 
-  const UserCreateRequest({
-    required this.email,
-    required this.password,
-  });
+  const SendOtpRequest({required this.email});
 
-  Map<String, dynamic> toJson() {
-    return {
-      'email': email,
-      'password': password,
-    };
-  }
+  Map<String, dynamic> toJson() => {'email': email};
 
   @override
-  List<Object?> get props => [email, password];
+  List<Object?> get props => [email];
 }
 
-class LoginRequest extends Equatable {
+class ResetPasswordRequest extends Equatable {
   final String email;
-  final String password;
+  final String otp;
+  final String newPassword;
 
-  const LoginRequest({
+  const ResetPasswordRequest({
     required this.email,
-    required this.password,
+    required this.otp,
+    required this.newPassword,
   });
 
-  Map<String, String> toFormData() {
-    return {
-      'username': email,
-      'password': password,
-    };
+  Map<String, dynamic> toJson() => {
+    'email': email,
+    'otp': otp,
+    'newPassword': newPassword,
+  };
+
+  @override
+  List<Object?> get props => [email, otp, newPassword];
+}
+
+class ApiResponse<T> extends Equatable {
+  final bool isSuccess;
+  final String? message;
+  final T? data;
+
+  const ApiResponse({
+    required this.isSuccess,
+    this.message,
+    this.data,
+  });
+
+  factory ApiResponse.fromJson(
+    Map<String, dynamic> json,
+    T Function(dynamic json) fromJsonT,
+  ) {
+    return ApiResponse<T>(
+      isSuccess: json['isSuccess'] as bool? ?? false,
+      message: json['message'] as String?,
+      data: json['data'] != null ? fromJsonT(json['data']) : null,
+    );
   }
 
   @override
-  List<Object?> get props => [email, password];
+  List<Object?> get props => [isSuccess, message, data];
 }

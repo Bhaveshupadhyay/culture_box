@@ -80,7 +80,7 @@ class _HeroCarouselState extends State<HeroCarousel> {
         children: [
           // Backdrop image
           AppNetworkImage(
-            imageUrl: movie.backdropUrl,
+            imageUrl: movie.effectiveBackdrop,
             fit: BoxFit.cover,
           ),
           // Gradient overlays
@@ -143,26 +143,28 @@ class _HeroCarouselState extends State<HeroCarousel> {
                               color: AppColors.logoGold, size: 14),
                           AppSpacing.hGap4,
                           Text(
-                            movie.rating.toStringAsFixed(1),
+                            movie.voteAverage.toStringAsFixed(1),
                             style: AppTextStyles.badgeRating,
                           ),
                         ],
                       ),
                     ),
-                    AppSpacing.hGap10,
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: AppSpacing.px10, vertical: AppSpacing.px4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.8),
-                        borderRadius: BorderRadius.circular(AppSpacing.px4),
-                        border: Border.all(color: Colors.white24),
+                    if (movie.year != null) ...[
+                      AppSpacing.hGap10,
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.px10, vertical: AppSpacing.px4),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(AppSpacing.px4),
+                          border: Border.all(color: Colors.white24),
+                        ),
+                        child: Text(
+                          '${movie.year}',
+                          style: AppTextStyles.badgeMeta,
+                        ),
                       ),
-                      child: Text(
-                        '${movie.year}',
-                        style: AppTextStyles.badgeMeta,
-                      ),
-                    ),
+                    ],
                   ],
                 ),
                 AppSpacing.vGap10,

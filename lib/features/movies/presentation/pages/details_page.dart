@@ -160,7 +160,7 @@ class _DetailsPageState extends State<DetailsPage> {
                           height: AppSpacing.px380,
                           width: double.infinity,
                           child: AppNetworkImage(
-                            imageUrl: movie.backdropUrl,
+                            imageUrl: movie.effectiveBackdrop,
                             fit: BoxFit.cover,
                           ),
                         ),
@@ -220,11 +220,11 @@ class _DetailsPageState extends State<DetailsPage> {
                             scrollDirection: Axis.horizontal,
                             child: Row(
                               children: [
-                                _buildMetaBadge('${movie.year}'),
-                                _buildRatingBadge(movie.rating),
-                                _buildMetaBadge(movie.certification),
-                                _buildMetaBadge(movie.language),
-                                _buildMetaBadge(movie.duration),
+                                if (movie.year != null) _buildMetaBadge('${movie.year}'),
+                                _buildRatingBadge(movie.voteAverage),
+                                if (movie.certification != null) _buildMetaBadge(movie.certification!),
+                                if (movie.language != null) _buildMetaBadge(movie.language!),
+                                if (movie.duration != null) _buildMetaBadge(movie.duration!),
                               ],
                             ),
                           ),

@@ -10,7 +10,8 @@ final List<Movie> mockMovies = [
         'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop',
     backdropUrl:
         'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&auto=format&fit=crop',
-    rating: 7.3,
+    voteAverage: 7.3,
+    rating: '7.3',
     year: 2025,
     duration: '3h 15m',
     certification: 'U/A 13',
@@ -31,7 +32,8 @@ final List<Movie> mockMovies = [
         'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=600&auto=format&fit=crop',
     backdropUrl:
         'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=1200&auto=format&fit=crop',
-    rating: 7.3,
+    voteAverage: 7.3,
+    rating: '7.3',
     year: 2025,
     duration: '2h 21m',
     certification: 'U/A 13',
@@ -58,7 +60,8 @@ final List<Movie> mockMovies = [
         'https://images.unsplash.com/photo-1568890686150-63155c229f64?w=600&auto=format&fit=crop',
     backdropUrl:
         'https://images.unsplash.com/photo-1514533450685-4493e01d1fdc?w=1200&auto=format&fit=crop',
-    rating: 7.8,
+    voteAverage: 7.8,
+    rating: '7.8',
     year: 2024,
     duration: '2h 28m',
     certification: 'A 18+',
@@ -80,7 +83,8 @@ final List<Movie> mockMovies = [
         'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600&auto=format&fit=crop',
     backdropUrl:
         'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1200&auto=format&fit=crop',
-    rating: 8.6,
+    voteAverage: 8.6,
+    rating: '8.6',
     year: 2024,
     duration: '2h 46m',
     certification: 'U/A 13',
@@ -101,7 +105,8 @@ final List<Movie> mockMovies = [
         'https://images.unsplash.com/photo-1440404653325-ab127d49abc1?w=600&auto=format&fit=crop',
     backdropUrl:
         'https://images.unsplash.com/photo-1478760329108-5c3ed9d495a0?w=1200&auto=format&fit=crop',
-    rating: 8.9,
+    voteAverage: 8.9,
+    rating: '8.9',
     year: 2023,
     duration: '3h 00m',
     certification: 'A 18+',
@@ -121,7 +126,8 @@ final List<Movie> mockMovies = [
         'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop',
     backdropUrl:
         'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=1200&auto=format&fit=crop',
-    rating: 8.7,
+    voteAverage: 8.7,
+    rating: '8.7',
     year: 2014,
     duration: '2h 49m',
     certification: 'U/A 13',
