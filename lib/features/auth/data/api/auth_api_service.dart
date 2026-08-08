@@ -23,10 +23,7 @@ class AuthApiService {
       ApiEndpoints.sendOtp,
       data: {'email': email},
     );
-    return ApiResponse.fromJson(
-      response.data as Map<String, dynamic>,
-      (_) {},
-    );
+    return ApiResponse<void>.fromJson(response.data as Map<String, dynamic>);
   }
 
   /// Initiate Forgot Password
@@ -35,10 +32,7 @@ class AuthApiService {
       ApiEndpoints.forgotPassword,
       data: {'email': email},
     );
-    return ApiResponse.fromJson(
-      response.data as Map<String, dynamic>,
-      (_) {},
-    );
+    return ApiResponse<void>.fromJson(response.data as Map<String, dynamic>);
   }
 
   /// Verify Reset OTP
@@ -47,10 +41,7 @@ class AuthApiService {
       ApiEndpoints.verifyResetOtp,
       data: {'email': email, 'otp': otp},
     );
-    return ApiResponse.fromJson(
-      response.data as Map<String, dynamic>,
-      (_) {},
-    );
+    return ApiResponse<void>.fromJson(response.data as Map<String, dynamic>);
   }
 
   /// Reset Password
@@ -59,19 +50,13 @@ class AuthApiService {
       ApiEndpoints.resetPassword,
       data: request.toJson(),
     );
-    return ApiResponse.fromJson(
-      response.data as Map<String, dynamic>,
-      (_) {},
-    );
+    return ApiResponse<void>.fromJson(response.data as Map<String, dynamic>);
   }
 
   /// Refresh Access Token
   Future<ApiResponse<void>> refreshToken() async {
     final response = await apiClient.get(ApiEndpoints.refresh);
-    return ApiResponse.fromJson(
-      response.data as Map<String, dynamic>,
-      (_) {},
-    );
+    return ApiResponse<void>.fromJson(response.data as Map<String, dynamic>);
   }
 
   /// Get Current User Profile
@@ -90,27 +75,18 @@ class AuthApiService {
       ApiEndpoints.updateProfile(id),
       data: data,
     );
-    return ApiResponse.fromJson(
-      response.data as Map<String, dynamic>,
-      (_) {},
-    );
+    return ApiResponse<void>.fromJson(response.data as Map<String, dynamic>);
   }
 
   /// Logout User
   Future<ApiResponse<void>> logout() async {
     final response = await apiClient.post(ApiEndpoints.logout);
-    return ApiResponse.fromJson(
-      response.data as Map<String, dynamic>,
-      (_) {},
-    );
+    return ApiResponse<void>.fromJson(response.data as Map<String, dynamic>);
   }
 
   /// Delete User Account
   Future<ApiResponse<void>> deleteAccount() async {
     final response = await apiClient.delete(ApiEndpoints.deleteAccount);
-    return ApiResponse.fromJson(
-      response.data as Map<String, dynamic>,
-      (_) {},
-    );
+    return ApiResponse<void>.fromJson(response.data as Map<String, dynamic>);
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart' as firebase;
 import '../../../../core/models/auth_models.dart';
 import '../../../../core/models/user_model.dart';
@@ -14,6 +15,18 @@ class AuthRepository {
     required this.authLocalStorage,
     firebase.FirebaseAuth? firebaseAuth,
   }) : _firebaseAuth = firebaseAuth ?? firebase.FirebaseAuth.instance;
+
+  String get _defaultDeviceType {
+    if (kIsWeb) return 'web';
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+        return 'ios';
+      case TargetPlatform.android:
+        return 'android';
+      default:
+        return 'web';
+    }
+  }
 
   /// Firebase Sign In + Backend Authentication
   Future<User> login({
@@ -36,16 +49,21 @@ class AuthRepository {
       FirebaseLoginRequest(
         idToken: idToken,
         deviceId: deviceId,
-        deviceType: deviceType ?? 'android',
+        deviceType: deviceType ?? _defaultDeviceType,
       ),
     );
 
-    if (loginResponse.accessToken != null) {
-      await authLocalStorage.saveTokens(
-        accessToken: loginResponse.accessToken!,
-        refreshToken: '',
+    final token = loginResponse.accessToken;
+    if (token == null || token.isEmpty) {
+      throw Exception(
+        loginResponse.reasonCode ?? 'Backend authentication failed',
       );
     }
+
+    await authLocalStorage.saveTokens(
+      accessToken: token,
+      refreshToken: '',
+    );
 
     final user = loginResponse.user ??
         User(
@@ -82,16 +100,21 @@ class AuthRepository {
       FirebaseLoginRequest(
         idToken: idToken,
         deviceId: deviceId,
-        deviceType: deviceType ?? 'android',
+        deviceType: deviceType ?? _defaultDeviceType,
       ),
     );
 
-    if (loginResponse.accessToken != null) {
-      await authLocalStorage.saveTokens(
-        accessToken: loginResponse.accessToken!,
-        refreshToken: '',
+    final token = loginResponse.accessToken;
+    if (token == null || token.isEmpty) {
+      throw Exception(
+        loginResponse.reasonCode ?? 'Backend authentication failed',
       );
     }
+
+    await authLocalStorage.saveTokens(
+      accessToken: token,
+      refreshToken: '',
+    );
 
     final user = loginResponse.user ??
         User(
@@ -134,10 +157,18 @@ class AuthRepository {
 
   /// Delete Account
   Future<void> deleteAccount() async {
+    final fbUser = _firebaseAuth.currentUser;
+    if (fbUser == null) {
+      throw Exception('User is not authenticated with Firebase.');
+    }
+
+    // Delete Firebase Auth user first (throws re-auth error if required before backend deletion)
+    await fbUser.delete();
+
     try {
       await authApiService.deleteAccount();
     } catch (_) {}
-    await _firebaseAuth.currentUser?.delete();
+
     await authLocalStorage.clearSession();
   }
 

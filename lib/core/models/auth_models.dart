@@ -37,9 +37,9 @@ class LoginResponse extends Equatable {
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
-      accessToken: json['accessToken'] as String?,
-      reasonCode: json['reasonCode'] as String?,
-      user: json['user'] != null
+      accessToken: json['accessToken'] as String? ?? json['access_token'] as String?,
+      reasonCode: json['reasonCode'] as String? ?? json['reason_code'] as String?,
+      user: json['user'] != null && json['user'] is Map<String, dynamic>
           ? User.fromJson(json['user'] as Map<String, dynamic>)
           : null,
     );
@@ -101,13 +101,15 @@ class ApiResponse<T> extends Equatable {
   });
 
   factory ApiResponse.fromJson(
-    Map<String, dynamic> json,
-    T Function(dynamic json) fromJsonT,
-  ) {
+    Map<String, dynamic> json, [
+    T Function(dynamic json)? fromJsonT,
+  ]) {
     return ApiResponse<T>(
-      isSuccess: json['isSuccess'] as bool? ?? false,
+      isSuccess: json['isSuccess'] as bool? ?? true,
       message: json['message'] as String?,
-      data: json['data'] != null ? fromJsonT(json['data']) : null,
+      data: (json['data'] != null && fromJsonT != null)
+          ? fromJsonT(json['data'])
+          : null,
     );
   }
 

@@ -17,11 +17,11 @@ class SubscriptionDetails extends Equatable {
 
   factory SubscriptionDetails.fromJson(Map<String, dynamic> json) {
     return SubscriptionDetails(
-      subId: json['sub_id'] as String? ?? '',
-      plan: json['plan'] as String? ?? '',
-      expiry: json['expiry'] as String? ?? '',
-      status: json['status'] as String? ?? 'expired',
-      amount: json['amount'] as String? ?? '0.0',
+      subId: json['sub_id']?.toString() ?? '',
+      plan: json['plan']?.toString() ?? '',
+      expiry: json['expiry']?.toString() ?? '',
+      status: json['status']?.toString() ?? 'expired',
+      amount: json['amount']?.toString() ?? '0.0',
     );
   }
 
@@ -57,13 +57,23 @@ class User extends Equatable {
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
+    final rawSub = json['is_subscribed'];
+    int subVal = 0;
+    if (rawSub is bool) {
+      subVal = rawSub ? 1 : 0;
+    } else if (rawSub is num) {
+      subVal = rawSub.toInt();
+    } else if (rawSub is String) {
+      subVal = int.tryParse(rawSub) ?? 0;
+    }
+
     return User(
-      id: json['id'] as String? ?? json['id']?.toString() ?? '',
-      email: json['email'] as String? ?? '',
-      profileName: json['profile_name'] as String?,
-      profileIconUrl: json['profile_icon_url'] as String?,
-      isSubscribed: json['is_subscribed'] as int? ?? 0,
-      subscriptionDetails: json['subscription_details'] != null
+      id: json['id']?.toString() ?? '',
+      email: json['email']?.toString() ?? '',
+      profileName: json['profile_name']?.toString(),
+      profileIconUrl: json['profile_icon_url']?.toString(),
+      isSubscribed: subVal,
+      subscriptionDetails: json['subscription_details'] != null && json['subscription_details'] is Map<String, dynamic>
           ? SubscriptionDetails.fromJson(json['subscription_details'] as Map<String, dynamic>)
           : null,
     );

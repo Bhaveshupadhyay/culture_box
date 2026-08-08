@@ -89,12 +89,17 @@ class MoviesRepository {
   Future<String> getMovieVideoUrl(String movieId, {bool isTrailer = false}) async {
     const String defaultVideoUrl =
         'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4';
+    
+    final intId = int.tryParse(movieId);
+    if (intId == null) {
+      return defaultVideoUrl;
+    }
+
     try {
-      final intId = int.tryParse(movieId) ?? 9;
       final url = await moviesApiService.getVideoUrl(
         id: intId,
         contentId: intId,
-        contentType: 'movie',
+        contentType: isTrailer ? 'trailer' : 'movie',
       );
       if (url != null && url.isNotEmpty) {
         return url;
@@ -106,11 +111,15 @@ class MoviesRepository {
   /// Search movies
   Future<List<Movie>> searchMovies({String? q, String? genre}) async {
     try {
-      final query = q ?? genre ?? '';
+      final query = q ?? (genre != null && genre != 'All' ? genre : '');
       if (query.isNotEmpty) {
         final response = await moviesApiService.searchContent(query: query);
         if (response.data.isNotEmpty) {
-          return response.data.map((c) => c.toMovie()).toList();
+          var movies = response.data.map((c) => c.toMovie()).toList();
+          if (genre != null && genre.isNotEmpty && genre != 'All') {
+            movies = movies.where((m) => m.genres.contains(genre)).toList();
+          }
+          return movies;
         }
       }
     } catch (_) {}

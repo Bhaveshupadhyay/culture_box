@@ -20,7 +20,7 @@ class LayoutSectionModel extends Equatable {
     return LayoutSectionModel(
       sectionId: json['section_id'] as String? ?? json['id']?.toString() ?? '',
       sectionName: json['section_name'] as String? ?? json['row_title'] as String? ?? '',
-      widgetType: WidgetTypeExtension.fromString(json['widget_type'] as String?),
+      widgetType: WidgetTypeExtension.fromString(json['widget_type'] as String? ?? json['content_source'] as String?),
       scrollType: ScrollTypeExtension.fromString(json['scroll_type'] as String?),
       dataEndpoint: json['data_endpoint'] as String? ?? json['id']?.toString(),
     );
@@ -76,10 +76,13 @@ class HomeLayoutRowModel extends Equatable {
   }
 
   LayoutSectionModel toLayoutSection() {
+    final parsedWidget = WidgetTypeExtension.fromString(contentSource);
+    final resolvedWidget = parsedWidget == WidgetType.unknown ? WidgetType.horizontalList : parsedWidget;
+
     return LayoutSectionModel(
       sectionId: id.toString(),
       sectionName: rowTitle,
-      widgetType: WidgetType.horizontalList,
+      widgetType: resolvedWidget,
       scrollType: ScrollType.horizontal,
       dataEndpoint: id.toString(),
     );
