@@ -1,6 +1,6 @@
 {
-    "name": "culture_box",
-    "short_name": "culture_box",
+    "name": "Culture Box",
+    "short_name": "Culture Box",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
