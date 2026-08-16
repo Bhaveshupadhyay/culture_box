@@ -158,18 +158,17 @@ jobs:
             STATUS_TEXT="<b>Build Failed!</b>"
           fi
 
-          MESSAGE="${EMOJI} <b>App Store / TestFlight Deployment Alert</b>
-
-<b>Status:</b> ${STATUS_TEXT}
-<b>Repository:</b> <code>${ESC_REPO}</code>
-<b>Triggered By:</b> @${ESC_ACTOR}
-<b>Workflow:</b> ${ESC_WORKFLOW} (#${RUN_NUMBER})
-<b>Commit:</b> ${ESC_COMMIT}
-
-<a href=\"${RUN_URL}\">View GitHub Action Run Logs</a>"
+          MESSAGE="${EMOJI} <b>App Store / TestFlight Deployment Alert</b>"$'\n\n'
+          MESSAGE="${MESSAGE}<b>Status:</b> ${STATUS_TEXT}"$'\n'
+          MESSAGE="${MESSAGE}<b>Repository:</b> <code>${ESC_REPO}</code>"$'\n'
+          MESSAGE="${MESSAGE}<b>Triggered By:</b> @${ESC_ACTOR}"$'\n'
+          MESSAGE="${MESSAGE}<b>Workflow:</b> ${ESC_WORKFLOW} (#${RUN_NUMBER})"$'\n'
+          MESSAGE="${MESSAGE}<b>Commit:</b> ${ESC_COMMIT}"$'\n\n'
+          MESSAGE="${MESSAGE}<a href=\"${RUN_URL}\">View GitHub Action Run Logs</a>"
 
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
             --data-urlencode "parse_mode=HTML" \
             --data-urlencode "text=${MESSAGE}" \
             --data-urlencode "disable_web_page_preview=true"
+
